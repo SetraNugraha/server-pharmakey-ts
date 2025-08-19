@@ -3,6 +3,7 @@ import { AuthRoutes } from "../auth/auth.route";
 import { AdminRoutes } from "../admin/admin.route";
 import { CustomerRoutes } from "../customer/customer.route";
 import { CategoryRoutes } from "../category/category.route";
+import { ProductRoutes } from "../products/product.route";
 import { IRouting } from "../../interface/routing.interface";
 
 const router: Router = express.Router();

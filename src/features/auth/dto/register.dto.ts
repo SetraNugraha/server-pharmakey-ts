@@ -9,7 +9,7 @@ export const RegisterSchema = z
       .string()
       .transform((val) => val.toUpperCase())
       .pipe(z.enum(Role, { message: "Invalid role, role must be ADMIN or CUSTOMRE" })),
-    password: z.string().min(6, { message: "password must at least 6 characters" }),
+    password: z.string().min(4, { message: "password must at least 6 characters" }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {

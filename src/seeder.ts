@@ -1,6 +1,6 @@
-import prisma from "../src/config/database.js";
-import generateSlug from "../src/utils/generateSlug.js";
+import generateSlug from "./utils/generateSlug";
 import bcrypt from "bcrypt";
+import { prisma } from "./config/database";
 
 async function main() {
   // if schema modified
@@ -13,26 +13,21 @@ async function main() {
   const users = await prisma.users.createMany({
     data: [
       {
-        username: "Test User",
-        email: "testuser@gmail.com",
-        password: await bcrypt.hash("testuser", salt),
+        username: "customer",
+        email: "customer@gmail.com",
+        password: await bcrypt.hash("customer", salt),
         role: "CUSTOMER",
       },
       {
-        username: "Admin Pharmakey",
-        email: "adminpharmakey@gmail.com",
-        password: await bcrypt.hash("adminpharmakey", salt),
+        username: "admin",
+        email: "admin@gmail.com",
+        password: await bcrypt.hash("admin", salt),
         role: "ADMIN",
       },
     ],
   });
 
-  const categoriesName = [
-    { name: "Surgicals" },
-    { name: "Fitness" },
-    { name: "Diabetes" },
-    { name: "Vitamins" },
-  ];
+  const categoriesName = [{ name: "Surgicals" }, { name: "Fitness" }, { name: "Diabetes" }, { name: "Vitamins" }];
   const categoriesSlug = categoriesName.map((category) => ({
     ...category,
     slug: generateSlug(category.name),

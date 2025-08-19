@@ -16,7 +16,7 @@ export class CategoryModel {
     limit: number
   ): Promise<{
     data: GetCategoryDto[];
-    meta: { isNext: boolean; isPrev: boolean; total: number; page: number; limit: number };
+    meta: IMetadata;
   }> => {
     const offset = (page - 1) * limit;
 
