@@ -4,10 +4,18 @@ import { AdminRoutes } from "../admin/admin.route";
 import { CustomerRoutes } from "../customer/customer.route";
 import { CategoryRoutes } from "../category/category.route";
 import { ProductRoutes } from "../products/product.route";
+import { CartRoutes } from "../carts/cart.route";
 import { IRouting } from "../../interface/routing.interface";
 
 const router: Router = express.Router();
-const allRoutes: IRouting[] = [...AuthRoutes, ...AdminRoutes, ...CustomerRoutes, ...CategoryRoutes];
+const allRoutes: IRouting[] = [
+  ...AuthRoutes,
+  ...AdminRoutes,
+  ...CustomerRoutes,
+  ...CategoryRoutes,
+  ...ProductRoutes,
+  ...CartRoutes,
+];
 
 allRoutes.forEach((route) => {
   if (route.middleware) {

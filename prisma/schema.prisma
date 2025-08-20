@@ -24,109 +24,109 @@ enum PaymentMethod {
 }
 
 model Users {
-  id String @id @db.Text @default(uuid())
-  username String
-  email String @unique
-  password String
-  role Role
+  id            String  @id @default(uuid()) @db.Text
+  username      String
+  email         String  @unique
+  password      String
+  role          Role
   profile_image String? @db.Text
-  address String?
-  city String?
-  post_code Int?
-  phone_number String?
+  address       String?
+  city          String?
+  post_code     Int?
+  phone_number  String?
   refresh_token String? @db.Text
 
- created_at DateTime @default(now()) @db.Timestamptz(3) 
-updated_at DateTime @updatedAt @db.Timestamptz(3) 
+  created_at DateTime @default(now()) @db.Timestamptz(3)
+  updated_at DateTime @updatedAt @db.Timestamptz(3)
 
   // Relation
-  cart Carts[] 
+  cart        Carts[]
   transaction Transactions[]
 }
 
 model Category {
-  id String @id @db.Text @default(uuid())
-  name String @unique
-  slug String @unique
+  id             String  @id @default(uuid()) @db.Text
+  name           String  @unique
+  slug           String  @unique
   category_image String? @db.Text
 
- created_at DateTime @default(now()) @db.Timestamptz(3)
-updated_at DateTime @updatedAt @db.Timestamptz(3)
-  
+  created_at DateTime @default(now()) @db.Timestamptz(3)
+  updated_at DateTime @updatedAt @db.Timestamptz(3)
+
   // Relation
   product Products[]
 }
 
 model Products {
-  id String @id @db.Text @default(uuid())
-  category_id String? @db.Text
-  name String
-  slug String @unique
+  id            String  @id @default(uuid()) @db.Text
+  category_id   String  @db.Text
+  name          String
+  slug          String  @unique
   product_image String? @db.Text
-  price Int
-  description String? @db.Text
+  price         Int
+  description   String? @db.Text
 
- created_at DateTime @default(now()) @db.Timestamptz(3)
-updated_at DateTime @updatedAt @db.Timestamptz(3)
+  created_at DateTime @default(now()) @db.Timestamptz(3)
+  updated_at DateTime @updatedAt @db.Timestamptz(3)
 
   // Relation
-  category Category? @relation(fields: [category_id], references: [id])
-  cart Carts[]
+  category           Category?             @relation(fields: [category_id], references: [id])
+  cart               Carts[]
   transaction_detail Transaction_Details[]
 }
 
 model Carts {
-  user_id String @db.Text
+  user_id    String @db.Text
   product_id String @db.Text
-  quantity Int @default(1)
+  quantity   Int    @default(1)
 
- created_at DateTime @default(now()) @db.Timestamptz(3)
-updated_at DateTime @updatedAt @db.Timestamptz(3)
+  created_at DateTime @default(now()) @db.Timestamptz(3)
+  updated_at DateTime @updatedAt @db.Timestamptz(3)
 
   // Relation
-  user Users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user    Users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
   product Products @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
   @@id([user_id, product_id])
 }
 
 model Transactions {
-  id String @id @db.Text @default(uuid())
-  user_id String @db.Text
-  is_paid IsPaid
-  notes String?
-  proof String? @db.Text // image
-  sub_total Float
-  tax Float
-  delivery_fee Float
-  total_amount Float
+  id             String        @id @default(uuid()) @db.Text
+  user_id        String        @db.Text
+  is_paid        IsPaid
+  notes          String?
+  proof          String?       @db.Text // image
+  sub_total      Float
+  tax            Float
+  delivery_fee   Float
+  total_amount   Float
   payment_method PaymentMethod
 
   // If user want to delivery to different address
-  address String?
-  city String?
-  post_code Int?
+  address      String?
+  city         String?
+  post_code    Int?
   phone_number String
 
- created_at DateTime @default(now()) @db.Timestamptz(3)
-updated_at DateTime @updatedAt @db.Timestamptz(3)
+  created_at DateTime @default(now()) @db.Timestamptz(3)
+  updated_at DateTime @updatedAt @db.Timestamptz(3)
 
   // Relation
-  user Users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user               Users                 @relation(fields: [user_id], references: [id], onDelete: Cascade)
   transaction_detail Transaction_Details[]
 }
 
 model Transaction_Details {
-  id String @id @db.Text @default(uuid())
+  id             String @id @default(uuid()) @db.Text
   transaction_id String @db.Text
-  product_id String @db.Text
-  price Int
-  quantity Int
+  product_id     String @db.Text
+  price          Int
+  quantity       Int
 
- created_at DateTime @default(now()) @db.Timestamptz(3)
-updated_at DateTime @updatedAt @db.Timestamptz(3)
+  created_at DateTime @default(now()) @db.Timestamptz(3)
+  updated_at DateTime @updatedAt @db.Timestamptz(3)
 
   // Relation
-  product Products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  product     Products     @relation(fields: [product_id], references: [id], onDelete: Cascade)
   transaction Transactions @relation(fields: [transaction_id], references: [id], onDelete: Cascade)
 }

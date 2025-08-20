@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { CreateCategoryDto } from "./dto/create-category.dto";
+import { GetCategoryDto } from "./category.schema";
 
 export class CategoryModel {
   private readonly select = {

@@ -1,10 +1,9 @@
 import { ZodError } from "zod";
 import generateSlug from "../../utils/generateSlug";
 import { CategoryModel } from "./category.model";
-import { CreateCategoryDto } from "./dto/create-category.dto";
-import { UpdateCategoryDto } from "./dto/update-category.dto";
 import { AppError } from "../../middlewares/error.middleware";
 import { unlinkImage } from "../../utils/unlinkImage";
+import { CreateCategoryDto, UpdateCategoryDto } from "./category.schema";
 
 export class CategoryService {
   constructor(private model: CategoryModel) {}
@@ -98,7 +97,7 @@ export class CategoryService {
       throw new AppError("category not found", 404);
     }
 
-     // Unlink old image if exists
+    // Unlink old image if exists
     if (existsCategory.category_image) {
       unlinkImage("categories", existsCategory.category_image);
     }

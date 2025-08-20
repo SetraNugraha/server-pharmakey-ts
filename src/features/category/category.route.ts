@@ -6,8 +6,7 @@ import { zodValidation } from "../../middlewares/zodValidation.middleware";
 import { CategoryController } from "./category.controller";
 import { CategoryModel } from "./category.model";
 import { CategoryService } from "./category.service";
-import { CreateCategorySchema } from "./dto/create-category.dto";
-import { UpdateCategorySchema } from "./dto/update-category.dto";
+import { CreateCategorySchema, UpdateCategorySchema } from "./category.schema";
 
 const model = new CategoryModel(prisma);
 const service = new CategoryService(model);

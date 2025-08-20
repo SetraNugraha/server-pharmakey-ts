@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { CreateProductDto } from "./dto/create-product.dto";
+import { GetProductDto, CreateProductDto, UpdateProductDto } from "./product.schema";
 
 export class ProductModel {
   private readonly select = {
@@ -36,18 +36,51 @@ export class ProductModel {
     };
   };
 
-  createProduct = async (payload: {
-    category_id: string;
-    name: string;
-    slug: string;
-    price: number;
-    product_image: string | null;
-    description: string | null;
-  }): Promise<GetProductDto> => {
+  getProductById = async (productId: string): Promise<GetProductDto | null> => {
+    return await this.prisma.products.findFirst({
+      where: { id: productId },
+      select: this.select,
+    });
+  };
+
+  getProductBySlug = async (slug: string): Promise<GetProductDto | null> => {
+    return await this.prisma.products.findFirst({
+      where: { slug },
+      select: this.select,
+    });
+  };
+
+  createProduct = async ({ payload, slug }: { payload: CreateProductDto; slug: string }): Promise<GetProductDto> => {
     const data = await this.prisma.products.create({
-      data: payload,
+      data: { ...payload, slug },
+      select: this.select,
     });
 
     return data;
+  };
+
+  updateProduct = async (
+    productId: string,
+    {
+      payload,
+      slug,
+    }: {
+      payload: UpdateProductDto;
+      slug: string | undefined;
+    }
+  ): Promise<GetProductDto> => {
+    const data = await this.prisma.products.update({
+      where: { id: productId },
+      data: { ...payload, slug },
+      select: this.select,
+    });
+
+    return data;
+  };
+
+  deleteProduct = async (productId: string) => {
+    return await this.prisma.products.delete({
+      where: { id: productId },
+    });
   };
 }

@@ -20,8 +20,33 @@ export class ProductController {
 
   createProduct = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const data = await this.service.createProduct(req.body);
+      const productImage = req.file ? req.file.filename : null;
+      const data = await this.service.createProduct({
+        ...req.body,
+        product_image: productImage,
+      });
       successResponse(res, 201, "create product success", data);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateProduct = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const productId = String(req.params.productId);
+      const productImage = req.file ? req.file.filename : null;
+      const data = await this.service.updateProduct(productId, { ...req.body, product_image: productImage });
+      successResponse(res, 200, "update product success", data);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const productId = String(req.params.productId);
+      await this.service.deleteProduct(productId);
+      successResponse(res, 200, "delete product success");
     } catch (error) {
       next(error);
     }
