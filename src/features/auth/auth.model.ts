@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { RegisterDto } from "./dto/register.dto";
+import { RegisterDto } from "./auth.schema";
 
 export class AuthModel {
   private readonly select = {

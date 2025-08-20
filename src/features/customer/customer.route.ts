@@ -1,12 +1,8 @@
 import { prisma } from "../../config/database";
 import { IRouting, HttpMethod } from "../../interface/routing.interface";
-import { CustomerController } from "./customer.controller";
-import { CustomerModel } from "./customer.model";
-import { CustomerService } from "./customer.service";
+import { CustomerModule } from "./customer.module";
 
-const model = new CustomerModel(prisma);
-const service = new CustomerService(model);
-const controller = new CustomerController(service);
+const { controller } = CustomerModule(prisma);
 
 export const CustomerRoutes: IRouting[] = [
   {

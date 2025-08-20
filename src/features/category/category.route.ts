@@ -3,14 +3,10 @@ import { HttpMethod, IRouting } from "../../interface/routing.interface";
 import { verifyAdmin, verifyToken } from "../../middlewares/auth.middleware";
 import { uploadCategoryImage } from "../../middlewares/uploadImage.middleware";
 import { zodValidation } from "../../middlewares/zodValidation.middleware";
-import { CategoryController } from "./category.controller";
-import { CategoryModel } from "./category.model";
-import { CategoryService } from "./category.service";
 import { CreateCategorySchema, UpdateCategorySchema } from "./category.schema";
+import { CategoryModule } from "./category.module";
 
-const model = new CategoryModel(prisma);
-const service = new CategoryService(model);
-const controller = new CategoryController(service);
+const { controller } = CategoryModule(prisma);
 
 export const CategoryRoutes: IRouting[] = [
   // GET Category
@@ -20,7 +16,7 @@ export const CategoryRoutes: IRouting[] = [
     middleware: [verifyToken],
     controller: controller.getAllCategory,
   },
-  // CRETE Category
+  // CREATE Category
   {
     method: HttpMethod.POST,
     url: "/category/create",

@@ -1,11 +1,10 @@
 import { ZodError } from "zod";
 import { CustomerModel } from "../customer/customer.model";
 import { AuthModel } from "./auth.model";
-import { RegisterDto } from "./dto/register.dto";
 import bcrypt from "bcrypt";
-import { LoginDto } from "./dto/login.dto";
 import jwt from "jsonwebtoken";
 import { AppError } from "../../middlewares/error.middleware";
+import { RegisterDto, LoginDto } from "./auth.schema";
 
 export class AuthService {
   constructor(private model: AuthModel, private customerModel: CustomerModel) {}

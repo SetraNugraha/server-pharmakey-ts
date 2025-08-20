@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { Role } from "@prisma/client";
 
+//  LOGIN
+export const LoginSchema = z.object({
+  email: z.string().email({ message: "Invalid email format" }),
+  password: z.string().min(4, { message: "password must at least 6 characters" }),
+});
+
+//  REGISTER
 export const RegisterSchema = z
   .object({
     username: z.string().min(3, { message: "username must be at least 3 characters" }),
@@ -17,4 +24,5 @@ export const RegisterSchema = z
     path: ["confirmPassword"],
   });
 
+export type LoginDto = z.infer<typeof LoginSchema>;
 export type RegisterDto = z.infer<typeof RegisterSchema>;

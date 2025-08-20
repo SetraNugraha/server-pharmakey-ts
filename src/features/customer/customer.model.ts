@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { GetCustomerDto } from "./dto/get-customer-dto";
+import { GetCustomerDto } from "./customer.schema";
 
 export class CustomerModel {
   private readonly select = {
@@ -24,6 +24,15 @@ export class CustomerModel {
     });
 
     return data || [];
+  };
+
+  getCustomerById = async (customerId: string): Promise<GetCustomerDto | null> => {
+    const data = await this.prisma.users.findUnique({
+      where: { id: customerId, role: "CUSTOMER" },
+      select: this.select,
+    });
+
+    return data;
   };
 
   getCustomerByEmail = async (email: string): Promise<GetCustomerDto | null> => {

@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { AuthService } from "./auth.service";
 import { successResponse } from "../../utils/response";
-import { RegisterDto } from "./dto/register.dto";
-import { LoginDto } from "./dto/login.dto";
+import { RegisterDto, LoginDto } from "./auth.schema";
 import { AppError } from "../../middlewares/error.middleware";
 
 export class AuthController {

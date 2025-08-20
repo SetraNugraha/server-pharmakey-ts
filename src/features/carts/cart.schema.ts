@@ -1,5 +1,6 @@
 interface ProductDetail {
   name: string;
+  category_id: string;
   price: number;
   product_image: string | null;
 }
@@ -7,7 +8,7 @@ interface ProductDetail {
 interface CartItems {
   product_id: string;
   quantity: number;
-  products: ProductDetail;
+  product: ProductDetail;
 }
 
 export interface CustomerCarts {
@@ -15,5 +16,5 @@ export interface CustomerCarts {
   username: string;
   email: string;
   profile_image: string | null;
-  carts: CartItems[];
+  cart: CartItems[];
 }
