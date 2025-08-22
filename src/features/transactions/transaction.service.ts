@@ -4,6 +4,7 @@ import { CartModel } from "../carts/cart.model";
 import { CustomerModel } from "../customer/customer.model";
 import { TransactionModel } from "./transaction.model";
 import { CheckoutTransactionDto } from "./transaction.schema";
+import { unlinkImage } from "../../utils/unlinkImage";
 
 export class TransactionService {
   constructor(private model: TransactionModel, private cartModel: CartModel, private customerModel: CustomerModel) {}
@@ -78,5 +79,53 @@ export class TransactionService {
     await this.cartModel.removeAllItems(customer.id);
 
     return newTransaction;
+  };
+
+  uploadProof = async (transactionId: string, customerId: string, imageProof: string) => {
+    if (!customerId) throw new AppError("customer id required", 404);
+    if (!transactionId) throw new AppError("transaction id required", 404);
+    if (!imageProof) throw new AppError("file image not found", 404);
+
+    const [customer, transaction] = await Promise.all([
+      this.customerModel.getCustomerById(customerId),
+      this.model.getTransactionById(transactionId),
+    ]);
+
+    if (!customer) {
+      unlinkImage("proofTransaction", imageProof);
+      throw new AppError("customer not found", 404);
+    }
+
+    if (!transaction || transaction === null) {
+      unlinkImage("proofTransaction", imageProof);
+      throw new AppError("transaction not found", 404);
+    }
+
+    return await this.model.uploadProof(transaction.id, customer.id, imageProof);
+  };
+
+  updateIsPaid = async (transactionId: string, newStatus: IsPaid) => {
+    if (!transactionId) {
+      throw new AppError("transaction id required", 404);
+    }
+
+    const transaction = await this.model.getTransactionById(transactionId);
+    if (!transaction || transaction === null) {
+      throw new AppError("transaction not found", 404);
+    }
+
+    if (transaction.is_paid !== "PENDING") {
+      throw new AppError("paid status already updated", 400);
+    }
+
+    if (newStatus === "SUCCESS" && (!transaction.proof || transaction.proof === null)) {
+      throw new AppError("customer must be upload the proof first", 400);
+    }
+
+    if (!["SUCCESS", "CANCELLED"].includes(newStatus)) {
+      throw new AppError("invalid paid status, paid status must be SUCCESS or CANCELLED", 400);
+    }
+
+    return await this.model.updateIsPaid(transaction.id, newStatus);
   };
 }

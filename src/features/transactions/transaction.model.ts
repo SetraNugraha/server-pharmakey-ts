@@ -1,12 +1,14 @@
-import { PrismaClient } from "@prisma/client";
+import { IsPaid, PrismaClient, Transactions } from "@prisma/client";
 import { TransactionDetailDto, CheckoutTransactionDto, GetTransactionDto } from "./transaction.schema";
 
 export class TransactionModel {
   constructor(private prisma: PrismaClient) {}
 
-  getTransactions = async (customerId?: string): Promise<GetTransactionDto[]> => {
+  getTransactions = async (customerId?: string, transactionId?: string): Promise<GetTransactionDto[]> => {
     const data = await this.prisma.transactions.findMany({
-      where: customerId ? { user_id: customerId } : {},
+      where: {
+        OR: [customerId ? { user_id: customerId } : {}, transactionId ? { id: transactionId } : {}],
+      },
       select: {
         id: true,
         is_paid: true,
@@ -55,6 +57,13 @@ export class TransactionModel {
     return await this.getTransactions();
   };
 
+  // GET transaction by Id
+  getTransactionById = async (transactionId: string): Promise<Transactions | null> => {
+    return await this.prisma.transactions.findUnique({
+      where: { id: transactionId },
+    });
+  };
+
   // GET Transaction By Customer Id
   getTransactionByCustomerId = async (customerId: string): Promise<GetTransactionDto[]> => {
     return await this.getTransactions(customerId);
@@ -78,6 +87,22 @@ export class TransactionModel {
   };
 
   // UPLOAD proof
+  uploadProof = async (transactionId: string, customerId: string, imageProof: string) => {
+    return await this.prisma.transactions.update({
+      where: { id: transactionId, user_id: customerId },
+      data: {
+        proof: imageProof,
+      },
+    });
+  };
 
-  // UPDATE status is_paid
+  // UPDATE status is_paid SUCCESS or CANCELLED
+  updateIsPaid = async (transactionId: string, newStatus: IsPaid) => {
+    return await this.prisma.transactions.update({
+      where: { id: transactionId },
+      data: {
+        is_paid: newStatus,
+      },
+    });
+  };
 }
