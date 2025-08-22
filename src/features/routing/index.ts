@@ -5,6 +5,7 @@ import { CustomerRoutes } from "../customer/customer.route";
 import { CategoryRoutes } from "../category/category.route";
 import { ProductRoutes } from "../products/product.route";
 import { CartRoutes } from "../carts/cart.route";
+import { TransactionRoutes } from "../transactions/transaction.route";
 import { IRouting } from "../../interface/routing.interface";
 
 const router: Router = express.Router();
@@ -15,6 +16,7 @@ const allRoutes: IRouting[] = [
   ...CategoryRoutes,
   ...ProductRoutes,
   ...CartRoutes,
+  ...TransactionRoutes,
 ];
 
 allRoutes.forEach((route) => {

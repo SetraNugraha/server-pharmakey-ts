@@ -103,9 +103,9 @@ model Transactions {
   payment_method PaymentMethod
 
   // If user want to delivery to different address
-  address      String?
-  city         String?
-  post_code    Int?
+  address      String
+  city         String
+  post_code    Int
   phone_number String
 
   created_at DateTime @default(now()) @db.Timestamptz(3)

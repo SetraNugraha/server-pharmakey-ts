@@ -11,7 +11,7 @@ interface CartItems {
   product: ProductDetail;
 }
 
-export interface CustomerCarts {
+export interface CustomerCartsDto {
   customer_id: string;
   username: string;
   email: string;

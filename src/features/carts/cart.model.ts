@@ -1,10 +1,10 @@
 import { PrismaClient } from "@prisma/client";
-import { CustomerCarts } from "./cart.schema";
+import { CustomerCartsDto } from "./cart.schema";
 
 export class CartModel {
   constructor(private prisma: PrismaClient) {}
 
-  getCartByCustomerId = async (customerId: string) => {
+  getCartByCustomerId = async (customerId: string): Promise<CustomerCartsDto> => {
     const data = await this.prisma.users.findUnique({
       where: { id: customerId, role: "CUSTOMER" },
       select: {
@@ -28,7 +28,7 @@ export class CartModel {
       },
     });
 
-    return { customer_id: customerId, ...data };
+    return { customer_id: customerId, ...data! };
   };
 
   findExistsCarts = async (customerId: string, productId: string) => {
@@ -93,5 +93,11 @@ export class CartModel {
         },
       });
     }
+  };
+
+  removeAllItems = async (customerId: string) => {
+    return await this.prisma.carts.deleteMany({
+      where: { user_id: customerId },
+    });
   };
 }
