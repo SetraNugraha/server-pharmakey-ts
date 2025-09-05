@@ -1,8 +1,9 @@
 import fs from "fs";
 import path from "path";
-import { AppError } from "../middlewares/error.middleware";
 
-export const unlinkImage = (folderName: string, fileName: string | null | undefined) => {
+type FolderName = "customers" | "products" | "categories" | "proofTransactions";
+
+export const unlinkImage = (folderName: FolderName, fileName: string | null | undefined) => {
   if (!fileName) return false;
 
   const pathImage = path.join(__dirname, "../../public/images");

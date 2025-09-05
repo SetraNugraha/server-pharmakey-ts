@@ -18,6 +18,7 @@ export class CartModel {
             product: {
               select: {
                 name: true,
+                slug: true,
                 category_id: true,
                 product_image: true,
                 price: true,

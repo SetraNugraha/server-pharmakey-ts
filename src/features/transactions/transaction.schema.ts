@@ -1,13 +1,13 @@
 import { z } from "zod";
 import { IsPaid, PaymentMethod } from "@prisma/client";
 
-interface CustomerTransaction {
+interface CheckoutCustomer {
   username: string;
   email: string;
   profile_image: string | null;
 }
 
-interface TransactionAddress {
+interface CheckoutShipping {
   address: string;
   city: string;
   post_code: number;
@@ -18,30 +18,43 @@ export interface GetTransactionDto {
   id: string;
   is_paid: IsPaid;
   proof: string | null;
-  customer: CustomerTransaction;
-  billing: CheckoutPricingDto;
-  shipping: TransactionAddress;
+  totalItemPurchase: number;
+  created_at: string | Date;
+  updated_at: string | Date;
+  customer: CheckoutCustomer;
+  billing: CheckoutBilling;
+  shipping: CheckoutShipping;
   transaction_detail: TransactionDetailDto[];
 }
 
 export interface TransactionDetailDto {
+  quantity: number;
+  price: number;
+  product: {
+    name: string;
+    product_image: string | File | null;
+  };
+}
+
+export interface CreateTransactionDetail {
   transaction_id: string;
   product_id: string;
   price: number;
   quantity: number;
 }
 
-export interface CheckoutPricingDto {
+export interface CheckoutBilling {
   sub_total: number;
   tax: number;
   delivery_fee: number;
   total_amount: number;
+  payment_method: PaymentMethod;
 }
 
 export const CheckoutBodySchema = z.object({
   address: z.string({ message: "address is required" }),
   city: z.string({ message: "city is required" }),
-  post_code: z
+  post_code: z.coerce
     .number({ message: "post code is required" })
     .int({ message: "post code must be an integer" })
     .refine((val) => /^\d{5}$/.test(String(val)), {
@@ -66,7 +79,7 @@ export const CheckoutBodySchema = z.object({
 
 export type CheckoutBodyDto = z.infer<typeof CheckoutBodySchema>;
 
-export interface CheckoutTransactionDto extends CheckoutPricingDto, CheckoutBodyDto {
+export interface CheckoutTransactionDto extends CheckoutBilling, CheckoutBodyDto {
   is_paid: IsPaid;
   proof: string | null;
 }

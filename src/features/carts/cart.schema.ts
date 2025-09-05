@@ -1,5 +1,6 @@
 interface ProductDetail {
   name: string;
+  slug: string;
   category_id: string;
   price: number;
   product_image: string | null;

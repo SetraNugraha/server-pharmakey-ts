@@ -58,7 +58,7 @@ export class AuthService {
         {
           code: "custom",
           path: ["password"],
-          message: "passowrd do not match",
+          message: "password do not match",
         },
       ]);
     }
@@ -93,13 +93,13 @@ export class AuthService {
       throw new AppError("Unauthorized, token not provided", 401); // 401 = Unauthorized
     }
 
-    const existsUser = await this.customerModel.getCustomerByToken(refreshToken);
+    const existsUser = await this.model.getUserByToken(refreshToken);
     if (!existsUser) {
       throw new AppError("Forbidden, invalid or expired token", 403); // 403 = Forbidden
     }
 
     // delete refreshToken on db
-    await this.customerModel.deleteRefreshToken(existsUser.id);
+    await this.model.deleteRefreshToken(existsUser.id);
   };
 
   refreshToken = async (refreshToken: string) => {

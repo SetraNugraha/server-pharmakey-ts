@@ -1,72 +1,120 @@
 import { IsPaid, PrismaClient, Transactions } from "@prisma/client";
-import { TransactionDetailDto, CheckoutTransactionDto, GetTransactionDto } from "./transaction.schema";
+import { CheckoutTransactionDto, GetTransactionDto, CreateTransactionDetail } from "./transaction.schema";
+import { IMetadata } from "../../interface/metadata.interface";
 
 export class TransactionModel {
   constructor(private prisma: PrismaClient) {}
 
-  getTransactions = async (customerId?: string, transactionId?: string): Promise<GetTransactionDto[]> => {
-    const data = await this.prisma.transactions.findMany({
-      where: {
-        OR: [customerId ? { user_id: customerId } : {}, transactionId ? { id: transactionId } : {}],
-      },
-      select: {
-        id: true,
-        is_paid: true,
-        proof: true,
-        sub_total: true,
-        tax: true,
-        delivery_fee: true,
-        total_amount: true,
-        address: true,
-        city: true,
-        post_code: true,
-        phone_number: true,
-        notes: true,
-        user: {
-          select: {
-            username: true,
-            email: true,
-            profile_image: true,
+  getTransactions = async (
+    page: number,
+    limit: number,
+    customerId?: string,
+    transactionId?: string
+  ): Promise<{ transactions: GetTransactionDto[]; meta: IMetadata }> => {
+    const where: any = {};
+    if (transactionId) where.id = transactionId;
+    if (customerId) where.user_id = customerId;
+
+    // Pagination
+    const offset = (page - 1) * limit;
+
+    const [total, data] = await Promise.all([
+      this.prisma.transactions.count({ where }),
+      this.prisma.transactions.findMany({
+        where,
+        skip: offset,
+        take: limit,
+        orderBy: { created_at: "desc" },
+        select: {
+          id: true,
+          is_paid: true,
+          payment_method: true,
+          proof: true,
+          sub_total: true,
+          tax: true,
+          delivery_fee: true,
+          total_amount: true,
+          address: true,
+          city: true,
+          post_code: true,
+          phone_number: true,
+          notes: true,
+          created_at: true,
+          updated_at: true,
+          user: {
+            select: {
+              username: true,
+              email: true,
+              profile_image: true,
+            },
+          },
+          transaction_detail: {
+            select: {
+              quantity: true,
+              price: true,
+              product: {
+                select: {
+                  name: true,
+                  product_image: true,
+                },
+              },
+            },
           },
         },
-        transaction_detail: {
-          select: {
-            transaction_id: true,
-            product_id: true,
-            price: true,
-            quantity: true,
-          },
-        },
-      },
-    });
+      }),
+    ]);
 
     const formattedData = data.map(
-      ({ user, sub_total, tax, delivery_fee, total_amount, address, city, post_code, phone_number, ...rest }) => ({
+      ({
+        user,
+        transaction_detail,
+        sub_total,
+        tax,
+        delivery_fee,
+        total_amount,
+        payment_method,
+        address,
+        city,
+        post_code,
+        phone_number,
+        ...rest
+      }) => ({
         ...rest,
+        totalItemPurchase: transaction_detail.reduce((total, item) => total + item.quantity, 0),
+        transaction_detail,
         customer: user,
-        billing: { sub_total, tax, delivery_fee, total_amount },
+        billing: { sub_total, tax, delivery_fee, total_amount, payment_method },
         shipping: { address, city, post_code, phone_number },
       })
     );
 
-    return formattedData;
+    const isPrev = page > 1;
+    const isNext = offset + limit < total;
+
+    return { transactions: formattedData, meta: { isPrev, isNext, total, page, limit } };
   };
 
   // GET All Transaction
-  getAllTransactions = async (): Promise<GetTransactionDto[]> => {
-    return await this.getTransactions();
+  getAllTransactions = async (
+    page: number,
+    limit: number
+  ): Promise<{ transactions: GetTransactionDto[]; meta: IMetadata }> => {
+    return await this.getTransactions(page, limit);
   };
 
-  // GET transaction by Id
-  getTransactionById = async (transactionId: string): Promise<Transactions | null> => {
+  getTransactionByTransactionId = async (transactionId: string): Promise<Transactions | null> => {
     return await this.prisma.transactions.findUnique({
       where: { id: transactionId },
     });
   };
 
   // GET Transaction By Customer Id
-  getTransactionByCustomerId = async (customerId: string): Promise<GetTransactionDto[]> => {
-    return await this.getTransactions(customerId);
+  getTransactionByCustomerId = async (
+    page: number,
+    limit: number,
+    customerId: string
+  ): Promise<{ transactions: GetTransactionDto[]; meta: IMetadata }> => {
+    return await this.getTransactions(page, limit, customerId);
   };
 
   // CREATE Transactions
@@ -80,7 +128,7 @@ export class TransactionModel {
   };
 
   // CREATE Transactions Detail after checkout success
-  createTransactionDetail = async (payload: TransactionDetailDto[]) => {
+  createTransactionDetail = async (payload: CreateTransactionDetail[]) => {
     return await this.prisma.transaction_Details.createMany({
       data: payload,
     });

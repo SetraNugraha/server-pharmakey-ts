@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { GetProductDto, CreateProductDto, UpdateProductDto } from "./product.schema";
+import { IMetadata } from "../../interface/metadata.interface";
 
 export class ProductModel {
   private readonly select = {
@@ -14,7 +15,7 @@ export class ProductModel {
   };
   constructor(private prisma: PrismaClient) {}
 
-  getAllProducts = async (page: number, limit: number): Promise<{ data: GetProductDto[]; meta: IMetadata }> => {
+  getAllProducts = async (page: number, limit: number): Promise<{ products: GetProductDto[]; meta: IMetadata }> => {
     const offset = (page - 1) * limit;
 
     const [total, data] = await Promise.all([
@@ -31,7 +32,7 @@ export class ProductModel {
     const isNext = offset + limit < total;
 
     return {
-      data: data,
+      products: data,
       meta: { isPrev, isNext, total, page, limit },
     };
   };
@@ -44,13 +45,13 @@ export class ProductModel {
   };
 
   getProductBySlug = async (slug: string): Promise<GetProductDto | null> => {
-    return await this.prisma.products.findFirst({
+    return await this.prisma.products.findUnique({
       where: { slug },
-      select: this.select,
+      select: { ...this.select, category: { select: { name: true, category_image: true } } },
     });
   };
 
-  createProduct = async ({ payload, slug }: { payload: CreateProductDto; slug: string }): Promise<GetProductDto> => {
+  createProduct = async ({ payload, slug }: { payload: CreateProductDto; slug: string }): Promise<CreateProductDto> => {
     const data = await this.prisma.products.create({
       data: { ...payload, slug },
       select: this.select,

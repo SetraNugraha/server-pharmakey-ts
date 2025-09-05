@@ -4,22 +4,35 @@ import { CartModel } from "../carts/cart.model";
 import { CustomerModel } from "../customer/customer.model";
 import { TransactionModel } from "./transaction.model";
 import { CheckoutTransactionDto } from "./transaction.schema";
-import { unlinkImage } from "../../utils/unlinkImage";
 
 export class TransactionService {
   constructor(private model: TransactionModel, private cartModel: CartModel, private customerModel: CustomerModel) {}
 
-  getAllTransaction = async () => {
-    const data = this.model.getAllTransactions();
-    return data;
+  getAllTransaction = async (page: number, limit: number) => {
+    return await this.model.getAllTransactions(page, limit);
   };
 
-  getTransactionsByCustomerId = async (customerId: string) => {
+  getTransactionByTransactionId = async (transactionId: string) => {
+    if (!transactionId) {
+      throw new AppError("transaction id required", 404);
+    }
+
+    const transaction = await this.model.getTransactionByTransactionId(transactionId);
+
+    // DISINI MASALAHNYA, kenapa endpoint /transactions/customer mengarah kesini ?
+    if (!transaction || transaction === null) {
+      throw new AppError("transaction not foundasdasd", 404);
+    }
+
+    return transaction;
+  };
+
+  getTransactionsByCustomerId = async (page: number, limit: number, customerId: string) => {
     if (!customerId) {
       throw new AppError("customer id not found", 404);
     }
 
-    return await this.model.getTransactionByCustomerId(customerId);
+    return await this.model.getTransactionByCustomerId(page, limit, customerId);
   };
 
   checkout = async (customerId: string, payload: CheckoutTransactionDto) => {
@@ -33,8 +46,8 @@ export class TransactionService {
     }
 
     const customerCarts = await this.cartModel.getCartByCustomerId(customer.id);
-    if (!customerCarts) {
-      throw new AppError("customer cart not found", 404);
+    if (!customerCarts.cart || customerCarts.cart === null || customerCarts.cart.length < 1) {
+      throw new AppError("Carts is empty", 404);
     }
 
     // Sub Total
@@ -88,16 +101,14 @@ export class TransactionService {
 
     const [customer, transaction] = await Promise.all([
       this.customerModel.getCustomerById(customerId),
-      this.model.getTransactionById(transactionId),
+      this.model.getTransactionByTransactionId(transactionId),
     ]);
 
     if (!customer) {
-      unlinkImage("proofTransaction", imageProof);
       throw new AppError("customer not found", 404);
     }
 
     if (!transaction || transaction === null) {
-      unlinkImage("proofTransaction", imageProof);
       throw new AppError("transaction not found", 404);
     }
 
@@ -109,7 +120,7 @@ export class TransactionService {
       throw new AppError("transaction id required", 404);
     }
 
-    const transaction = await this.model.getTransactionById(transactionId);
+    const transaction = await this.model.getTransactionByTransactionId(transactionId);
     if (!transaction || transaction === null) {
       throw new AppError("transaction not found", 404);
     }

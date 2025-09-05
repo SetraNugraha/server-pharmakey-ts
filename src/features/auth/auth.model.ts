@@ -44,4 +44,11 @@ export class AuthModel {
 
     return data;
   };
+
+  deleteRefreshToken = async (userId: string) => {
+    return await this.prisma.users.update({
+      where: { id: userId },
+      data: { refresh_token: null },
+    });
+  };
 }

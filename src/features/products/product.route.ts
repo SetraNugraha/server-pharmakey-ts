@@ -18,8 +18,12 @@ export const ProductRoutes: IRouting[] = [
   {
     method: HttpMethod.GET,
     url: "/products",
-    middleware: [verifyToken],
     controller: controller.getAllProducts,
+  },
+  {
+    method: HttpMethod.GET,
+    url: "/product/:slug",
+    controller: controller.getProductBySlug,
   },
   {
     method: HttpMethod.POST,

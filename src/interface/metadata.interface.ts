@@ -1,4 +1,4 @@
-interface IMetadata {
+export interface IMetadata {
   isNext: boolean;
   isPrev: boolean;
   total: number;

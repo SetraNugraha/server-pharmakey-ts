@@ -1,14 +1,52 @@
 import { NextFunction, Request, Response } from "express";
 import { CustomerService } from "./customer.service";
 import { successResponse } from "../../utils/response";
+import { unlinkImage } from "../../utils/unlinkImage";
 
 export class CustomerController {
   constructor(private service: CustomerService) {}
 
   getAllCustomer = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const data = await this.service.getAllCustomer();
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 5;
+      const data = await this.service.getAllCustomer(page, limit);
       successResponse(res, 200, "getAllCustomer success", data);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getCustomerById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const customerId = req.user!.userId;
+      const data = await this.service.getCustomerById(customerId);
+      successResponse(res, 200, "get customer by id success", data);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateCustomer = async (req: Request, res: Response, next: NextFunction) => {
+    const profile_image = req.file ? req.file.filename : null;
+
+    try {
+      const customerId = req.user!.userId;
+      const data = await this.service.updateCustomer(customerId, { ...req.body, profile_image });
+      successResponse(res, 200, "update customer success", data);
+    } catch (error) {
+      if (profile_image) {
+        unlinkImage("customers", profile_image);
+      }
+      next(error);
+    }
+  };
+
+  deleteCustomer = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const customerId = req.params.customerId;
+      await this.service.deleteCustomer(customerId);
+      successResponse(res, 200, "customer delete success");
     } catch (error) {
       next(error);
     }

@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-import { GetCustomerDto } from "./customer.schema";
+import { IGetCustomerDto, UpdateCustomerDto } from "./customer.schema";
+import { IMetadata } from "../../interface/metadata.interface";
 
 export class CustomerModel {
   private readonly select = {
@@ -17,16 +18,30 @@ export class CustomerModel {
 
   constructor(private prisma: PrismaClient) {}
 
-  getAllCustomers = async (): Promise<GetCustomerDto[]> => {
-    const data = await this.prisma.users.findMany({
-      where: { role: "CUSTOMER" },
-      select: this.select,
-    });
+  getAllCustomers = async (page: number, limit: number): Promise<{ customers: IGetCustomerDto[]; meta: IMetadata }> => {
+    const offset = (page - 1) * limit;
 
-    return data || [];
+    const [total, data] = await Promise.all([
+      this.prisma.users.count({ where: { role: "CUSTOMER" } }),
+      this.prisma.users.findMany({
+        where: { role: "CUSTOMER" },
+        skip: offset,
+        take: limit,
+        orderBy: { created_at: "desc" },
+        select: this.select,
+      }),
+    ]);
+
+    const isPrev = page > 1;
+    const isNext = offset + limit < total;
+
+    return {
+      customers: data,
+      meta: { isPrev, isNext, total, page, limit },
+    };
   };
 
-  getCustomerById = async (customerId: string): Promise<GetCustomerDto | null> => {
+  getCustomerById = async (customerId: string): Promise<IGetCustomerDto | null> => {
     const data = await this.prisma.users.findUnique({
       where: { id: customerId, role: "CUSTOMER" },
       select: this.select,
@@ -35,7 +50,7 @@ export class CustomerModel {
     return data;
   };
 
-  getCustomerByEmail = async (email: string): Promise<GetCustomerDto | null> => {
+  getCustomerByEmail = async (email: string): Promise<IGetCustomerDto | null> => {
     const data = await this.prisma.users.findUnique({
       where: { email, role: "CUSTOMER" },
       select: this.select,
@@ -44,9 +59,17 @@ export class CustomerModel {
     return data;
   };
 
-  getCustomerByToken = async (token: string): Promise<GetCustomerDto | null> => {
+  getCustomerByToken = async (token: string): Promise<IGetCustomerDto | null> => {
     return await this.prisma.users.findFirst({
       where: { refresh_token: token, role: "CUSTOMER" },
+      select: this.select,
+    });
+  };
+
+  updateCustomer = async (customerId: string, payload: UpdateCustomerDto) => {
+    return await this.prisma.users.update({
+      where: { id: customerId, role: "CUSTOMER" },
+      data: payload,
       select: this.select,
     });
   };
@@ -60,10 +83,9 @@ export class CustomerModel {
     });
   };
 
-  deleteRefreshToken = async (userId: string) => {
-    return await this.prisma.users.update({
-      where: { id: userId },
-      data: { refresh_token: null },
+  deleteCustomer = async (customerId: string) => {
+    return await this.prisma.users.delete({
+      where: { id: customerId, role: "CUSTOMER" },
     });
   };
 }

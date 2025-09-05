@@ -2,14 +2,27 @@ import { IsPaid } from "@prisma/client";
 import { successResponse } from "../../utils/response";
 import { TransactionService } from "./transaction.service";
 import { Request, Response, NextFunction } from "express";
+import { unlinkImage } from "../../utils/unlinkImage";
 
 export class TransactionController {
   constructor(private service: TransactionService) {}
 
   getAllTransactions = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const data = await this.service.getAllTransaction();
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 5;
+      const data = await this.service.getAllTransaction(page, limit);
       successResponse(res, 200, "get all transactions success", data);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getTransactionByTransactionId = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const transactionId = req.params.transactionId;
+      const data = await this.service.getTransactionByTransactionId(transactionId);
+      successResponse(res, 200, "get transaction by id success", data);
     } catch (error) {
       next(error);
     }
@@ -18,7 +31,10 @@ export class TransactionController {
   getTransactionsByCustomerId = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const customerId = req.user!.userId;
-      const data = await this.service.getTransactionsByCustomerId(customerId);
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 5;
+
+      const data = await this.service.getTransactionsByCustomerId(page, limit, customerId);
       successResponse(res, 200, "get transactions by customer id success", data);
     } catch (error) {
       next(error);
@@ -36,15 +52,18 @@ export class TransactionController {
   };
 
   uploadProof = async (req: Request, res: Response, next: NextFunction) => {
+    const imageProof = req.file!.filename;
+
     try {
       const customerId = req.user!.userId;
       const transactionId = req.params.transactionId;
-      const imageProof = req.file!.filename;
 
       const data = await this.service.uploadProof(transactionId, customerId, imageProof);
-
       successResponse(res, 200, "upload proof success", data);
     } catch (error) {
+      if (imageProof) {
+        unlinkImage("proofTransactions", imageProof);
+      }
       next(error);
     }
   };

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ProductService } from "./product.service";
 import { successResponse } from "../../utils/response";
+import { unlinkImage } from "../../utils/unlinkImage";
 
 export class ProductController {
   constructor(private service: ProductService) {}
@@ -18,26 +19,43 @@ export class ProductController {
     }
   };
 
-  createProduct = async (req: Request, res: Response, next: NextFunction) => {
+  getProductBySlug = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const productImage = req.file ? req.file.filename : null;
+      const slug = req.params.slug;
+      const data = await this.service.getProductBySlug(slug);
+      successResponse(res, 200, "get product by slug success", data);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  createProduct = async (req: Request, res: Response, next: NextFunction) => {
+    const productImage = req.file ? req.file.filename : null;
+    try {
       const data = await this.service.createProduct({
         ...req.body,
         product_image: productImage,
       });
       successResponse(res, 201, "create product success", data);
     } catch (error) {
+      if (productImage) {
+        unlinkImage("products", productImage);
+      }
       next(error);
     }
   };
 
   updateProduct = async (req: Request, res: Response, next: NextFunction) => {
+    const productImage = req.file ? req.file.filename : null;
+
     try {
       const productId = String(req.params.productId);
-      const productImage = req.file ? req.file.filename : null;
       const data = await this.service.updateProduct(productId, { ...req.body, product_image: productImage });
       successResponse(res, 200, "update product success", data);
     } catch (error) {
+      if (productImage) {
+        unlinkImage("products", productImage);
+      }
       next(error);
     }
   };

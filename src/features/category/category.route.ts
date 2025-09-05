@@ -13,7 +13,6 @@ export const CategoryRoutes: IRouting[] = [
   {
     method: HttpMethod.GET,
     url: "/category",
-    middleware: [verifyToken],
     controller: controller.getAllCategory,
   },
   // CREATE Category

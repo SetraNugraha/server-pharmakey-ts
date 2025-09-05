@@ -20,7 +20,6 @@ export class CategoryService {
 
     const existsCategory = await this.model.getCategoryBySlug(newSlug);
     if (existsCategory) {
-      unlinkImage("categories", category_image);
       throw new ZodError([
         {
           code: "custom",
@@ -49,7 +48,6 @@ export class CategoryService {
 
     const existsCategory = await this.model.getCategoryById(categoryId);
     if (!existsCategory) {
-      unlinkImage("categories", payload.category_image);
       throw new AppError("category not found", 404);
     }
 
@@ -63,7 +61,6 @@ export class CategoryService {
     }
 
     if (existsCategory.name === sanitizedName) {
-      unlinkImage("categories", payload.category_image);
       throw new ZodError([
         {
           code: "custom",

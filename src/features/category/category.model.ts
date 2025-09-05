@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { GetCategoryDto } from "./category.schema";
+import { IMetadata } from "../../interface/metadata.interface";
 
 export class CategoryModel {
   private readonly select = {
@@ -7,7 +8,6 @@ export class CategoryModel {
     name: true,
     slug: true,
     category_image: true,
-    created_at: true,
   };
   constructor(private prisma: PrismaClient) {}
 
@@ -15,7 +15,7 @@ export class CategoryModel {
     page: number,
     limit: number
   ): Promise<{
-    data: GetCategoryDto[];
+    categories: GetCategoryDto[];
     meta: IMetadata;
   }> => {
     const offset = (page - 1) * limit;
@@ -34,7 +34,7 @@ export class CategoryModel {
     const isNext = offset + limit < total;
 
     return {
-      data: data,
+      categories: data,
       meta: { isPrev, isNext, total, page, limit },
     };
   };

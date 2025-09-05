@@ -1,4 +1,4 @@
-import { ZodError } from "zod";
+import { keyof, ZodError } from "zod";
 import generateSlug from "../../utils/generateSlug";
 import { CategoryModel } from "../category/category.model";
 import { ProductModel } from "./product.model";
@@ -13,13 +13,25 @@ export class ProductService {
     return data;
   };
 
+  getProductBySlug = async (slug: string) => {
+    if (!slug) {
+      throw new AppError("product id required", 404);
+    }
+
+    const product = await this.model.getProductBySlug(slug);
+    if (!product) {
+      throw new AppError("product not found", 404);
+    }
+
+    return product;
+  };
+
   createProduct = async (payload: CreateProductDto) => {
     const existsCategory = await this.categoryModel.getCategoryById(payload.category_id);
     const slug = generateSlug(payload.name);
     const existsProduct = await this.model.getProductBySlug(slug);
 
     if (!existsCategory) {
-      unlinkImage("products", payload.product_image);
       throw new ZodError([
         {
           code: "custom",
@@ -30,7 +42,6 @@ export class ProductService {
     }
 
     if (existsProduct) {
-      unlinkImage("products", payload.product_image);
       throw new ZodError([
         {
           code: "custom",
@@ -47,21 +58,21 @@ export class ProductService {
 
   updateProduct = async (productId: string, payload: UpdateProductDto) => {
     if (!productId) {
-      unlinkImage("products", payload.product_image);
       throw new AppError("product id not found", 404);
     }
 
-    const existsProduct = await this.model.getProductById(productId);
-    if (!existsProduct) {
-      unlinkImage("products", payload.product_image);
+    // Find Exists Product
+    const product = await this.model.getProductById(productId);
+    if (!product) {
       throw new AppError("product not found", 404);
     }
 
+    // Handle Exists Name
     let newSlug: string | undefined;
     if (payload.name) {
       newSlug = generateSlug(payload.name);
-      if (existsProduct.slug === newSlug) {
-        unlinkImage("products", payload.product_image);
+      const existsSlug = await this.model.getProductBySlug(newSlug);
+      if (existsSlug?.slug === newSlug) {
         throw new ZodError([
           {
             code: "custom",
@@ -72,21 +83,30 @@ export class ProductService {
       }
     }
 
-    if (payload.product_image && existsProduct.product_image) {
-      unlinkImage("products", existsProduct.product_image);
+    // Unlink Old Image
+    if (payload.product_image && product.product_image) {
+      unlinkImage("products", product.product_image);
     }
 
     const newPayload = {
-      name: payload.name ?? existsProduct.name,
-      category_id: payload.category_id ?? existsProduct.category_id,
-      price: payload.price ?? existsProduct.price,
-      product_image: payload.product_image ?? existsProduct.product_image,
-      description: payload.description ?? existsProduct.description,
+      name: payload.name ?? product.name,
+      category_id: payload.category_id ?? product.category_id,
+      price: payload.price ? Number(payload.price) : product.price,
+      product_image: payload.product_image ?? product.product_image,
+      description: payload.description ?? product.description,
     };
 
-    return await this.model.updateProduct(existsProduct.id, {
+    const isChanges = Object.entries(newPayload).some(
+      ([key, val]) => val !== undefined && val !== product[key as keyof typeof product]
+    );
+
+    if (!isChanges) {
+      throw new AppError("no fields are changes", 404);
+    }
+
+    return await this.model.updateProduct(product.id, {
       payload: newPayload,
-      slug: newSlug ?? existsProduct.slug,
+      slug: payload.name ? newSlug : product.slug,
     });
   };
 
