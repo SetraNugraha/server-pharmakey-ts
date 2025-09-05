@@ -45,7 +45,7 @@ export class CustomerService {
       email: payload.email ?? customer.email,
       address: payload.address ?? customer.address,
       city: payload.city ?? customer.city,
-      post_code: payload.post_code !== undefined ? Number(payload.post_code) : Number(customer.post_code),
+      post_code: payload.post_code ?? customer.post_code,
       phone_number: payload.phone_number ?? customer.phone_number,
       profile_image: payload.profile_image ?? customer.profile_image,
     };

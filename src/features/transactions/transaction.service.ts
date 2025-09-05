@@ -67,10 +67,10 @@ export class TransactionService {
       tax: Number(tax),
       delivery_fee: Number(deliveryFee),
       total_amount: Number(grandTotalPrice),
-      address: customer.address || payload.address,
-      city: customer.city || payload.city,
-      post_code: customer.post_code ? Number(customer.post_code) : Number(payload.post_code),
-      phone_number: customer.phone_number || payload.phone_number,
+      address: payload.address ?? customer.address,
+      city: payload.city ?? customer.city,
+      post_code: payload.post_code ?? customer.post_code,
+      phone_number: payload.phone_number ?? customer.phone_number,
       notes: payload.notes,
     };
 

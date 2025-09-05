@@ -10,7 +10,7 @@ interface CheckoutCustomer {
 interface CheckoutShipping {
   address: string;
   city: string;
-  post_code: number;
+  post_code: string;
   phone_number: string;
 }
 
@@ -52,14 +52,9 @@ export interface CheckoutBilling {
 }
 
 export const CheckoutBodySchema = z.object({
-  address: z.string({ message: "address is required" }),
-  city: z.string({ message: "city is required" }),
-  post_code: z.coerce
-    .number({ message: "post code is required" })
-    .int({ message: "post code must be an integer" })
-    .refine((val) => /^\d{5}$/.test(String(val)), {
-      message: "post code must be 5 digits",
-    }),
+  address: z.string({ message: "address is required" }).min(1, { message: "address required" }),
+  city: z.string({ message: "city is required" }).min(1, { message: "city is required" }),
+  post_code: z.string({ message: "post code is required" }).max(5, { message: "post code should be 5 number" }),
   phone_number: z
     .string({ message: "phone number is required" })
     .regex(/^\d+$/, { message: "phone number should contain only digits" })
