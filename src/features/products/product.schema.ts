@@ -4,7 +4,7 @@ import { z } from "zod";
 export const ProductSchema = z.object({
   id: z.string(),
   category_id: z.string(),
-  name: z.string(),
+  name: z.string().nonempty("name cannot be empty"),
   slug: z.string(),
   product_image: z
     .string()

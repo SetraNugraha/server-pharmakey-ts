@@ -1,4 +1,4 @@
-import { ZodError } from "zod";
+import { keyof, ZodError } from "zod";
 import generateSlug from "../../utils/generateSlug";
 import { CategoryModel } from "./category.model";
 import { AppError } from "../../middlewares/error.middleware";
@@ -58,30 +58,39 @@ export class CategoryService {
     if (name) {
       sanitizedName = name?.trim();
       newSlug = generateSlug(sanitizedName);
+
+      const findExistsName = await this.model.getCategoryBySlug(newSlug);
+      if (findExistsName?.slug === newSlug) {
+        throw new ZodError([
+          {
+            code: "custom",
+            path: ["name"],
+            message: "name already exists",
+          },
+        ]);
+      }
     }
 
-    if (existsCategory.name === sanitizedName) {
-      throw new ZodError([
-        {
-          code: "custom",
-          path: ["name"],
-          message: "name already exists",
-        },
-      ]);
-    }
-
-    const preparePayload = {
+    const newPayload = {
       name: sanitizedName ?? existsCategory.name,
       slug: newSlug ?? existsCategory.slug,
       category_image: category_image ?? existsCategory.category_image,
     };
+
+    const isChanges = Object.entries(newPayload).some(
+      ([key, value]) => value !== undefined && value !== existsCategory[key as keyof typeof existsCategory]
+    );
+
+    if (!isChanges) {
+      throw new AppError("no fields are changes", 404);
+    }
 
     // Unlink old image if exists
     if (category_image && existsCategory.category_image) {
       unlinkImage("categories", existsCategory.category_image);
     }
 
-    return await this.model.updateCategory(existsCategory.id, preparePayload);
+    return await this.model.updateCategory(existsCategory.id, newPayload);
   };
 
   deleteCategory = async (categoryId: string) => {

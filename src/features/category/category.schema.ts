@@ -1,20 +1,25 @@
 import { z } from "zod";
 
+// SCHEMA
+export const CategorySchema = z.object({
+  id: z.string(),
+  name: z.string().nonempty("name is required"),
+  slug: z.string(),
+  category_image: z.string().nullable().optional(),
+});
+
 // GET
-export interface GetCategoryDto {
-  id: string;
-  name: string;
-  slug: string;
-  category_image: string | null;
-}
+export type GetCategoryDto = z.infer<typeof CategorySchema>;
 
 // CREATE
-export const CreateCategorySchema = z.object({
-  name: z.string().nonempty("name is required"),
-  category_image: z.string().nullable().optional(),
+export const CreateCategorySchema = CategorySchema.omit({
+  id: true,
+  slug: true,
 });
 export type CreateCategoryDto = z.infer<typeof CreateCategorySchema>;
 
 // UPDATE
-export const UpdateCategorySchema = CreateCategorySchema.partial();
-export type UpdateCategoryDto = z.infer<typeof UpdateCategorySchema>;
+export const UpdateCategorySchema = CategorySchema.partial().omit({
+  slug: true,
+});
+export type UpdateCategoryDto = z.infer<typeof CategorySchema>;

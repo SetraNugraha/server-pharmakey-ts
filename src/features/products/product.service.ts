@@ -96,6 +96,7 @@ export class ProductService {
       description: payload.description ?? product.description,
     };
 
+    // some() return boolean
     const isChanges = Object.entries(newPayload).some(
       ([key, val]) => val !== undefined && val !== product[key as keyof typeof product]
     );
