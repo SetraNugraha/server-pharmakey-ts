@@ -15,16 +15,25 @@ const service = new ProductService(model, categoryModel);
 const controller = new ProductController(service);
 
 export const ProductRoutes: IRouting[] = [
+  // GET ALL
   {
     method: HttpMethod.GET,
     url: "/products",
     controller: controller.getAllProducts,
   },
+  // GET BY FILTER
+  {
+    method: HttpMethod.GET,
+    url: "/products/filter",
+    controller: controller.getProductByFilter,
+  },
+  // GET BY SLUG
   {
     method: HttpMethod.GET,
     url: "/product/:slug",
     controller: controller.getProductBySlug,
   },
+  // CREATE
   {
     method: HttpMethod.POST,
     url: "/product/create",
@@ -36,6 +45,7 @@ export const ProductRoutes: IRouting[] = [
     ],
     controller: controller.createProduct,
   },
+  // UPDATE
   {
     method: HttpMethod.PATCH,
     url: "/product/update/:productId",
@@ -47,6 +57,7 @@ export const ProductRoutes: IRouting[] = [
     ],
     controller: controller.updateProduct,
   },
+  // DELETE
   {
     method: HttpMethod.DELETE,
     url: "/product/delete/:productId",

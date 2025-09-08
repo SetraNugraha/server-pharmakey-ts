@@ -19,6 +19,17 @@ export class ProductController {
     }
   };
 
+  getProductByFilter = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { name, category } = req.query as { name?: string; category?: string };
+      const data = await this.service.getProductByFilter(name, category);
+
+      successResponse(res, 200, "get product by filter success", data);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getProductBySlug = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const slug = req.params.slug;

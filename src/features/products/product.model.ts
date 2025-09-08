@@ -37,6 +37,40 @@ export class ProductModel {
     };
   };
 
+  getProductByFilter = async (productName?: string, categoryName?: string) => {
+    if (!productName && !categoryName) return [];
+
+    const filter: any[] = [];
+
+    if (productName) {
+      filter.push({
+        name: {
+          contains: productName,
+          mode: "insensitive",
+        },
+      });
+    }
+
+    if (categoryName) {
+      filter.push({
+        category: {
+          name: {
+            contains: categoryName,
+            mode: "insensitive",
+          },
+        },
+      });
+    }
+
+    const data = await this.prisma.products.findMany({
+      where: {
+        OR: filter.length > 0 ? filter : undefined,
+      },
+    });
+
+    return data;
+  };
+
   getProductById = async (productId: string): Promise<GetProductDto | null> => {
     return await this.prisma.products.findFirst({
       where: { id: productId },

@@ -13,6 +13,11 @@ export class ProductService {
     return data;
   };
 
+  getProductByFilter = async (productName?: string, categoryName?: string) => {
+    const data = await this.model.getProductByFilter(productName, categoryName);
+    return data;
+  };
+
   getProductBySlug = async (slug: string) => {
     if (!slug) {
       throw new AppError("product id required", 404);
