@@ -21,8 +21,10 @@ export class ProductController {
 
   getProductByFilter = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { name, category } = req.query as { name?: string; category?: string };
-      const data = await this.service.getProductByFilter(name, category);
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 7;
+      const search = req.query.search as string;
+      const data = await this.service.getProductByFilter(page, limit, search);
 
       successResponse(res, 200, "get product by filter success", data);
     } catch (error) {

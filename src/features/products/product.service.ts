@@ -13,8 +13,8 @@ export class ProductService {
     return data;
   };
 
-  getProductByFilter = async (productName?: string, categoryName?: string) => {
-    const data = await this.model.getProductByFilter(productName, categoryName);
+  getProductByFilter = async (page: number, limit: number, search?: string) => {
+    const data = await this.model.getProductByFilter(page, limit, search);
     return data;
   };
 

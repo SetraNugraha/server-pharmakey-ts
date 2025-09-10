@@ -37,38 +37,50 @@ export class ProductModel {
     };
   };
 
-  getProductByFilter = async (productName?: string, categoryName?: string) => {
-    if (!productName && !categoryName) return [];
+  getProductByFilter = async (
+    page: number,
+    limit: number,
+    search?: string
+  ): Promise<{ products: GetProductDto[]; meta: IMetadata | null }> => {
+    if (!search) return { products: [], meta: null };
 
-    const filter: any[] = [];
-
-    if (productName) {
-      filter.push({
+    const filter: any[] = [
+      {
         name: {
-          contains: productName,
+          contains: search,
           mode: "insensitive",
         },
-      });
-    }
-
-    if (categoryName) {
-      filter.push({
+      },
+      {
         category: {
           name: {
-            contains: categoryName,
+            contains: search,
             mode: "insensitive",
           },
         },
-      });
-    }
-
-    const data = await this.prisma.products.findMany({
-      where: {
-        OR: filter.length > 0 ? filter : undefined,
       },
-    });
+    ];
 
-    return data;
+    const offset = (page - 1) * limit;
+
+    const [total, data] = await Promise.all([
+      this.prisma.products.count({
+        where: { OR: filter },
+      }),
+      this.prisma.products.findMany({
+        where: { OR: filter },
+        take: limit,
+        skip: offset,
+      }),
+    ]);
+
+    const isPrev = page > 1;
+    const isNext = offset + limit < total;
+
+    return {
+      products: data,
+      meta: { page, limit, isPrev, isNext, total },
+    };
   };
 
   getProductById = async (productId: string): Promise<GetProductDto | null> => {
