@@ -5,8 +5,8 @@ import { prisma } from "./config/database";
 async function main() {
   // if schema modified
   await prisma.users.deleteMany();
-  await prisma.category.deleteMany();
   await prisma.products.deleteMany();
+  await prisma.category.deleteMany();
 
   const salt = await bcrypt.genSalt(10);
 

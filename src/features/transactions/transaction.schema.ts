@@ -54,12 +54,15 @@ export interface CheckoutBilling {
 export const CheckoutBodySchema = z.object({
   address: z.string({ message: "address is required" }).min(1, { message: "address required" }),
   city: z.string({ message: "city is required" }).min(1, { message: "city is required" }),
-  post_code: z.string({ message: "post code is required" }).max(5, { message: "post code should be 5 number" }),
+  post_code: z
+    .string()
+    .min(1, { message: "post code is required" })
+    .max(5, { message: "post code should be 5 number" }),
   phone_number: z
-    .string({ message: "phone number is required" })
-    .regex(/^\d+$/, { message: "phone number should contain only digits" })
+    .string()
     .min(11, { message: "phone number should be at least 11 digits" })
-    .max(12, { message: "phone number should be at most 12 digits" }),
+    .max(12, { message: "phone number should be at most 12 digits" })
+    .regex(/^\d+$/, { message: "phone number should contain only digits" }),
   payment_method: z
     .string()
     .transform((val) => val.toUpperCase())
