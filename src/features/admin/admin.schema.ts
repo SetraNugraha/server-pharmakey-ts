@@ -1,14 +1,24 @@
+import { IsPaid } from "@prisma/client";
+
 export interface IGetDashboard {
-  totalRevenue: number;
-  totalOrders: number;
   totalCustomers: number;
   totalProducts: number;
-  mostSellingProduct: {
-    name: string;
-    sold: number;
-  };
-  salesChart: {
-    date: string;
+  revenue: {
+    month: string;
     total: number;
+    growth: number;
+    isPositive: boolean;
+  };
+  statusOrders: {
+    status: IsPaid;
+    total: number;
+  }[];
+  topSellingProduct: {
+    productName: string;
+    totalSold: number;
+  }[];
+  revenuePerMonth: {
+    month: string;
+    revenue: number;
   }[];
 }
