@@ -27,6 +27,11 @@ export class AdminService {
       total: safeNumber(s.total_orders),
     }));
 
+    const sanitizedPaymentMethodPerMonth = dataDaashboard.paymentMethodPerMonth.map((p) => ({
+      payment_method: p.payment_method,
+      total: safeNumber(p.total),
+    }));
+
     // Process Total Revenue with Growth
     let totalRevenueWithGrowth = { month: "", total: 0, growth: 0, isPositive: false };
 
@@ -46,10 +51,11 @@ export class AdminService {
     }
 
     return {
-      revenue: totalRevenueWithGrowth,
-      statusOrders: sanitizedStatusOrders,
       totalCustomers: safeNumber(dataDaashboard.totalCustomers[0].totalCustomers),
       totalProducts: safeNumber(dataDaashboard.totalProducts[0].totalProducts),
+      revenue: totalRevenueWithGrowth,
+      statusOrders: sanitizedStatusOrders,
+      paymentMethodPerMonth: sanitizedPaymentMethodPerMonth,
       topSellingProduct: sasnitizedTopSellingProducts,
       revenuePerMonth: sanitizedRevenuePerMonth,
     };

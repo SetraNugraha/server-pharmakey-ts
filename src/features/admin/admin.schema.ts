@@ -1,4 +1,4 @@
-import { IsPaid } from "@prisma/client";
+import { IsPaid, PaymentMethod } from "@prisma/client";
 
 export interface IGetDashboard {
   totalCustomers: number;
@@ -11,6 +11,10 @@ export interface IGetDashboard {
   };
   statusOrders: {
     status: IsPaid;
+    total: number;
+  }[];
+  paymentMethodPerMonth: {
+    payment_method: PaymentMethod;
     total: number;
   }[];
   topSellingProduct: {

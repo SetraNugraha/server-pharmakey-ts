@@ -102,9 +102,7 @@ export class ProductService {
     };
 
     // some() return boolean
-    const isChanges = Object.entries(newPayload).some(
-      ([key, val]) => val !== undefined && val !== product[key as keyof typeof product]
-    );
+    const isChanges = Object.entries(newPayload).some(([key, val]) => val !== undefined && val !== product[key as keyof typeof product]);
 
     if (!isChanges) {
       throw new AppError("no fields are changes", 404);

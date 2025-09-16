@@ -29,11 +29,11 @@ const configureMulter = (folderName: string) => {
     }),
     fileFilter: (req: Request, file: Express.Multer.File, cb: (error: any, acceptedFile: boolean) => void) => {
       const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-      if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-      } else {
-        cb(new AppError("invalid file type, only JPG, JPEG and PNG are allowed", 400), false);
+      if (!allowedTypes.includes(file.mimetype)) {
+        return cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", file.fieldname), false);
       }
+
+      cb(null, true);
     },
     limits: { fileSize: 5 * 1024 * 1024 }, // limit 5mb
   });

@@ -95,10 +95,7 @@ export class TransactionModel {
   };
 
   // GET All Transaction
-  getAllTransactions = async (
-    page: number,
-    limit: number
-  ): Promise<{ transactions: GetTransactionDto[]; meta: IMetadata }> => {
+  getAllTransactions = async (page: number, limit: number): Promise<{ transactions: GetTransactionDto[]; meta: IMetadata }> => {
     return await this.getTransactions(page, limit);
   };
 
@@ -151,6 +148,13 @@ export class TransactionModel {
       data: {
         is_paid: newStatus,
       },
+    });
+  };
+
+  // DELETE Row Transactions_detail if is_paid CANCELLED
+  deleteTransactionDetailByTransactionId = async (transactionId: string) => {
+    return await this.prisma.transaction_Details.deleteMany({
+      where: { transaction_id: transactionId },
     });
   };
 }

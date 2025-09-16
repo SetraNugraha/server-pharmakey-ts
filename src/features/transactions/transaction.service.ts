@@ -137,6 +137,11 @@ export class TransactionService {
       throw new AppError("invalid paid status, paid status must be SUCCESS or CANCELLED", 400);
     }
 
+    // If status CANCELLED, delete transaction_detail
+    if (newStatus === IsPaid.CANCELLED) {
+      await this.model.deleteTransactionDetailByTransactionId(transactionId);
+    }
+
     return await this.model.updateIsPaid(transaction.id, newStatus);
   };
 }
