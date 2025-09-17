@@ -1,3 +1,5 @@
+import { optional, z } from "zod";
+
 interface ProductDetail {
   name: string;
   slug: string;
@@ -19,3 +21,12 @@ export interface CustomerCartsDto {
   profile_image: string | null;
   cart: CartItems[];
 }
+
+export const AddToCartSchema = z.object({
+  quantity: z.coerce
+    .number({ message: "quantity should be a number" })
+    .min(1, { message: "quantity minimun 1" })
+    .nonnegative({ message: "quantity cannot be negative" }),
+});
+
+export type AddToCartDto = z.infer<typeof AddToCartSchema>;

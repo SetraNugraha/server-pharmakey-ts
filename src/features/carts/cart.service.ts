@@ -19,15 +19,12 @@ export class CartService {
     return await this.model.getCartByCustomerId(customer.id);
   };
 
-  addToCart = async (customerId: string, productId: string) => {
+  addToCart = async (customerId: string, productId: string, quantity: number = 1) => {
     if (!customerId || !productId) {
       throw new AppError("customer or product id not found", 404);
     }
 
-    const [customer, product] = await Promise.all([
-      this.customerModel.getCustomerById(customerId),
-      this.productModel.getProductById(productId),
-    ]);
+    const [customer, product] = await Promise.all([this.customerModel.getCustomerById(customerId), this.productModel.getProductById(productId)]);
 
     if (!customer) {
       throw new AppError("customer not found", 404);
@@ -37,7 +34,7 @@ export class CartService {
       throw new AppError("product not found", 404);
     }
 
-    return await this.model.addToCart(customer.id, product.id);
+    return await this.model.addToCart(customer.id, product.id, Number(quantity));
   };
 
   removeFromCart = async (customerId: string, productId: string) => {

@@ -19,7 +19,9 @@ export class CartController {
     try {
       const customerId = req.user!.userId;
       const productId = req.params.productId;
-      const data = await this.service.addToCart(customerId, productId);
+      const quantity = Number(req.body.quantity);
+
+      const data = await this.service.addToCart(customerId, productId, quantity);
       successResponse(res, 200, "add to cart success", data);
     } catch (error) {
       next(error);

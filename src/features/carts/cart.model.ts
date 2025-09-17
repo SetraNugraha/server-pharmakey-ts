@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { CustomerCartsDto } from "./cart.schema";
+import { AddToCartDto, CustomerCartsDto } from "./cart.schema";
 
 export class CartModel {
   constructor(private prisma: PrismaClient) {}
@@ -49,7 +49,7 @@ export class CartModel {
     });
   };
 
-  addToCart = async (customerId: string, productId: string) => {
+  addToCart = async (customerId: string, productId: string, quantity: number = 1): Promise<AddToCartDto> => {
     return await this.prisma.carts.upsert({
       where: {
         // This is because 2 row never cant duplicate
@@ -59,41 +59,25 @@ export class CartModel {
         },
       },
       update: {
-        quantity: { increment: 1 },
+        quantity: { increment: quantity },
       },
       create: {
         user_id: customerId,
         product_id: productId,
-        quantity: 1,
+        quantity: quantity,
       },
     });
   };
 
   removeFromCart = async (customerId: string, productId: string) => {
-    const customerCarts = await this.findExistsCarts(customerId, productId);
-
-    if (customerCarts!.quantity > 1) {
-      return await this.prisma.carts.update({
-        where: {
-          user_id_product_id: {
-            user_id: customerId,
-            product_id: productId,
-          },
+    await this.prisma.carts.delete({
+      where: {
+        user_id_product_id: {
+          user_id: customerId,
+          product_id: productId,
         },
-        data: {
-          quantity: { decrement: 1 },
-        },
-      });
-    } else {
-      return await this.prisma.carts.delete({
-        where: {
-          user_id_product_id: {
-            user_id: customerId,
-            product_id: productId,
-          },
-        },
-      });
-    }
+      },
+    });
   };
 
   removeAllItems = async (customerId: string) => {
