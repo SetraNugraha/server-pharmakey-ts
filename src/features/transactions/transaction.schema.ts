@@ -1,6 +1,14 @@
 import { z } from "zod";
 import { IsPaid, PaymentMethod } from "@prisma/client";
 
+export interface GetTransactionParam {
+  page: number;
+  limit: number;
+  customerId?: string;
+  transactionId?: string;
+  filter?: { status?: IsPaid; proofUpload?: boolean };
+}
+
 interface CheckoutCustomer {
   username: string;
   email: string;
@@ -54,10 +62,7 @@ export interface CheckoutBilling {
 export const CheckoutBodySchema = z.object({
   address: z.string({ message: "address is required" }).min(1, { message: "address required" }),
   city: z.string({ message: "city is required" }).min(1, { message: "city is required" }),
-  post_code: z
-    .string()
-    .min(1, { message: "post code is required" })
-    .max(5, { message: "post code should be 5 number" }),
+  post_code: z.string().min(1, { message: "post code is required" }).max(5, { message: "post code should be 5 number" }),
   phone_number: z
     .string()
     .min(11, { message: "phone number should be at least 11 digits" })

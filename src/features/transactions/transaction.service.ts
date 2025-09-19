@@ -8,8 +8,8 @@ import { CheckoutTransactionDto } from "./transaction.schema";
 export class TransactionService {
   constructor(private model: TransactionModel, private cartModel: CartModel, private customerModel: CustomerModel) {}
 
-  getAllTransaction = async (page: number, limit: number) => {
-    return await this.model.getAllTransactions(page, limit);
+  getAllTransaction = async (page: number, limit: number, filter?: { status?: IsPaid; proofUpload?: boolean }) => {
+    return await this.model.getAllTransactions(page, limit, filter);
   };
 
   getTransactionByTransactionId = async (transactionId: string) => {

@@ -11,7 +11,18 @@ export class TransactionController {
     try {
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 5;
-      const data = await this.service.getAllTransaction(page, limit);
+      const statusQuery = req.query.status as IsPaid | undefined;
+      let proofUploadQuery: boolean | undefined;
+
+      if (req.query.proofUpload === "true") {
+        proofUploadQuery = true;
+      } else if (req.query.proofUpload === "false") {
+        proofUploadQuery = false;
+      } else {
+        proofUploadQuery = undefined;
+      }
+
+      const data = await this.service.getAllTransaction(page, limit, { status: statusQuery, proofUpload: proofUploadQuery });
       successResponse(res, 200, "get all transactions success", data);
     } catch (error) {
       next(error);

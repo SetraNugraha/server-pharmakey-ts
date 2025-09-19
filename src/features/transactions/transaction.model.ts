@@ -1,19 +1,34 @@
 import { IsPaid, PrismaClient, Transactions } from "@prisma/client";
-import { CheckoutTransactionDto, GetTransactionDto, CreateTransactionDetail } from "./transaction.schema";
+import { CheckoutTransactionDto, GetTransactionDto, CreateTransactionDetail, GetTransactionParam } from "./transaction.schema";
 import { IMetadata } from "../../interface/metadata.interface";
 
 export class TransactionModel {
   constructor(private prisma: PrismaClient) {}
 
-  getTransactions = async (
-    page: number,
-    limit: number,
-    customerId?: string,
-    transactionId?: string
-  ): Promise<{ transactions: GetTransactionDto[]; meta: IMetadata }> => {
+  getTransactions = async ({
+    page,
+    limit,
+    transactionId,
+    customerId,
+    filter,
+  }: GetTransactionParam): Promise<{ transactions: GetTransactionDto[]; meta: IMetadata }> => {
     const where: any = {};
+
     if (transactionId) where.id = transactionId;
     if (customerId) where.user_id = customerId;
+
+    // Filtered Transactions
+    if (filter) {
+      if (filter.status) {
+        where.is_paid = { equals: filter.status as IsPaid };
+      }
+
+      if (filter.proofUpload === true) {
+        where.proof = { not: null };
+      } else if (filter.proofUpload === false) {
+        where.proof = { equals: null };
+      }
+    }
 
     // Pagination
     const offset = (page - 1) * limit;
@@ -95,8 +110,12 @@ export class TransactionModel {
   };
 
   // GET All Transaction
-  getAllTransactions = async (page: number, limit: number): Promise<{ transactions: GetTransactionDto[]; meta: IMetadata }> => {
-    return await this.getTransactions(page, limit);
+  getAllTransactions = async (
+    page: number,
+    limit: number,
+    filter?: { status?: IsPaid; proofUpload?: boolean }
+  ): Promise<{ transactions: GetTransactionDto[]; meta: IMetadata }> => {
+    return await this.getTransactions({ page, limit, filter });
   };
 
   getTransactionByTransactionId = async (transactionId: string): Promise<Transactions | null> => {
@@ -111,7 +130,7 @@ export class TransactionModel {
     limit: number,
     customerId: string
   ): Promise<{ transactions: GetTransactionDto[]; meta: IMetadata }> => {
-    return await this.getTransactions(page, limit, customerId);
+    return await this.getTransactions({ page, limit, customerId });
   };
 
   // CREATE Transactions
