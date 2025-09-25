@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ProductService } from "./product.service";
 import { successResponse } from "../../utils/response";
-import { unlinkImage } from "../../utils/unlinkImage";
+import { deleteImageCloudinary } from "../../utils/deleteImageCloudinary";
 
 export class ProductController {
   constructor(private service: ProductService) {}
@@ -43,32 +43,40 @@ export class ProductController {
   };
 
   createProduct = async (req: Request, res: Response, next: NextFunction) => {
-    const productImage = req.file ? req.file.filename : null;
+    const image_url = req.file?.path || null;
+    const image_public_id = req.file?.filename || null;
+
     try {
       const data = await this.service.createProduct({
         ...req.body,
-        product_image: productImage,
+        image_url,
+        image_public_id,
       });
       successResponse(res, 201, "create product success", data);
     } catch (error) {
-      if (productImage) {
-        unlinkImage("products", productImage);
+      // If Error delete image in cloudinary
+      if (image_public_id) {
+        await deleteImageCloudinary(image_public_id);
       }
+
       next(error);
     }
   };
 
   updateProduct = async (req: Request, res: Response, next: NextFunction) => {
-    const productImage = req.file ? req.file.filename : null;
+    const image_url = req.file?.path || null;
+    const image_public_id = req.file?.filename || null;
 
     try {
       const productId = String(req.params.productId);
-      const data = await this.service.updateProduct(productId, { ...req.body, product_image: productImage });
+      const data = await this.service.updateProduct({ ...req.body, id: productId, image_url, image_public_id });
       successResponse(res, 200, "update product success", data);
     } catch (error) {
-      if (productImage) {
-        unlinkImage("products", productImage);
+      // If Error delete image in cloudinary
+      if (image_public_id) {
+        await deleteImageCloudinary(image_public_id);
       }
+
       next(error);
     }
   };

@@ -1,11 +1,11 @@
-import { optional, z } from "zod";
+import { z } from "zod";
 
 interface ProductDetail {
   name: string;
   slug: string;
   category_id: string;
   price: number;
-  product_image: string | null;
+  image_url: string | null;
 }
 
 interface CartItems {
@@ -18,7 +18,7 @@ export interface CustomerCartsDto {
   customer_id: string;
   username: string;
   email: string;
-  profile_image: string | null;
+  image_url: string | null;
   cart: CartItems[];
 }
 

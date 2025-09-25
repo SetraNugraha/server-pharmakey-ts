@@ -24,17 +24,18 @@ enum PaymentMethod {
 }
 
 model Users {
-  id            String  @id @default(uuid()) @db.Text
-  username      String
-  email         String  @unique
-  password      String
-  role          Role
-  profile_image String? @db.Text
-  address       String?
-  city          String?
-  post_code     String?
-  phone_number  String?
-  refresh_token String? @db.Text
+  id              String  @id @default(uuid()) @db.Text
+  username        String
+  email           String  @unique
+  password        String
+  role            Role
+  image_url       String? @db.Text
+  image_public_id String? @db.Text
+  address         String?
+  city            String?
+  post_code       String?
+  phone_number    String?
+  refresh_token   String? @db.Text
 
   created_at DateTime @default(now()) @db.Timestamptz(3)
   updated_at DateTime @updatedAt @db.Timestamptz(3)
@@ -45,10 +46,11 @@ model Users {
 }
 
 model Category {
-  id             String  @id @default(uuid()) @db.Text
-  name           String  @unique
-  slug           String  @unique
-  category_image String? @db.Text
+  id              String  @id @default(uuid()) @db.Text
+  name            String  @unique
+  slug            String  @unique
+  image_url       String? @db.Text
+  image_public_id String? @db.Text
 
   created_at DateTime @default(now()) @db.Timestamptz(3)
   updated_at DateTime @updatedAt @db.Timestamptz(3)
@@ -58,13 +60,14 @@ model Category {
 }
 
 model Products {
-  id            String  @id @default(uuid()) @db.Text
-  category_id   String  @db.Text
-  name          String
-  slug          String  @unique
-  product_image String? @db.Text
-  price         Int
-  description   String? @db.Text
+  id              String  @id @default(uuid()) @db.Text
+  category_id     String  @db.Text
+  name            String
+  slug            String  @unique
+  image_url       String? @db.Text
+  image_public_id String? @db.Text
+  price           Int
+  description     String? @db.Text
 
   created_at DateTime @default(now()) @db.Timestamptz(3)
   updated_at DateTime @updatedAt @db.Timestamptz(3)
@@ -91,16 +94,17 @@ model Carts {
 }
 
 model Transactions {
-  id             String        @id @default(uuid()) @db.Text
-  user_id        String        @db.Text
-  is_paid        IsPaid
-  notes          String?
-  proof          String?       @db.Text // image
-  sub_total      Float
-  tax            Float
-  delivery_fee   Float
-  total_amount   Float
-  payment_method PaymentMethod
+  id              String        @id @default(uuid()) @db.Text
+  user_id         String        @db.Text
+  is_paid         IsPaid
+  notes           String?
+  proof_url       String?       @db.Text
+  proof_public_id String?       @db.Text
+  sub_total       Float
+  tax             Float
+  delivery_fee    Float
+  total_amount    Float
+  payment_method  PaymentMethod
 
   // If user want to delivery to different address
   address      String

@@ -1,7 +1,7 @@
 import { successResponse } from "../../utils/response";
-import { unlinkImage } from "../../utils/unlinkImage";
 import { CategoryService } from "./category.service";
 import { Request, Response, NextFunction } from "express";
+import { deleteImageCloudinary } from "../../utils/deleteImageCloudinary";
 
 export class CategoryController {
   constructor(private service: CategoryService) {}
@@ -19,15 +19,16 @@ export class CategoryController {
   };
 
   createCategory = async (req: Request, res: Response, next: NextFunction) => {
-    const category_image = req.file ? req.file.filename : null;
-
+    const image_url = req.file?.path || null; // Cloudinary URL
+    const image_public_id = req.file?.filename || null; // Cloudinary public ID
     try {
       const name = req.body.name;
-      const data = await this.service.createCategory({ name, category_image });
+
+      const data = await this.service.createCategory({ name, image_url, image_public_id });
       successResponse(res, 201, "create category success", data);
     } catch (error) {
-      if (category_image) {
-        unlinkImage("categories", category_image);
+      if (image_public_id) {
+        await deleteImageCloudinary(image_public_id);
       }
 
       next(error);
@@ -35,17 +36,19 @@ export class CategoryController {
   };
 
   updateCategory = async (req: Request, res: Response, next: NextFunction) => {
-    const category_image = req.file ? req.file.filename : null;
+    const image_url = req.file?.path || null; // Cloudinary URL
+    const image_public_id = req.file?.filename || null; // Cloudinary public ID
 
     try {
       const categoryId = String(req.params.categoryId);
       const name = req.body.name;
-      const data = await this.service.updateCategory(categoryId, { name, category_image });
+
+      const data = await this.service.updateCategory({ id: categoryId, name, image_url, image_public_id });
 
       successResponse(res, 200, "update category success", data);
     } catch (error) {
-      if (category_image) {
-        unlinkImage("categories", category_image);
+      if (image_public_id) {
+        await deleteImageCloudinary(image_public_id);
       }
 
       next(error);

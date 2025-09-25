@@ -10,7 +10,7 @@ export class CartModel {
       select: {
         username: true,
         email: true,
-        profile_image: true,
+        image_url: true,
         cart: {
           select: {
             product_id: true,
@@ -20,7 +20,7 @@ export class CartModel {
                 name: true,
                 slug: true,
                 category_id: true,
-                product_image: true,
+                image_url: true,
                 price: true,
               },
             },

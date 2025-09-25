@@ -1,5 +1,5 @@
 import { IsPaid, PrismaClient, Transactions } from "@prisma/client";
-import { CheckoutTransactionDto, GetTransactionDto, CreateTransactionDetail, GetTransactionParam } from "./transaction.schema";
+import { CheckoutTransactionDto, GetTransactionDto, CreateTransactionDetail, GetTransactionParam, UploadProofPayload } from "./transaction.schema";
 import { IMetadata } from "../../interface/metadata.interface";
 
 export class TransactionModel {
@@ -24,9 +24,9 @@ export class TransactionModel {
       }
 
       if (filter.proofUpload === true) {
-        where.proof = { not: null };
+        where.proof_url = { not: null };
       } else if (filter.proofUpload === false) {
-        where.proof = { equals: null };
+        where.proof_url = { equals: null };
       }
     }
 
@@ -44,7 +44,7 @@ export class TransactionModel {
           id: true,
           is_paid: true,
           payment_method: true,
-          proof: true,
+          proof_url: true,
           sub_total: true,
           tax: true,
           delivery_fee: true,
@@ -60,7 +60,7 @@ export class TransactionModel {
             select: {
               username: true,
               email: true,
-              profile_image: true,
+              image_url: true,
             },
           },
           transaction_detail: {
@@ -70,7 +70,8 @@ export class TransactionModel {
               product: {
                 select: {
                   name: true,
-                  product_image: true,
+                  slug: true,
+                  image_url: true,
                 },
               },
             },
@@ -151,11 +152,12 @@ export class TransactionModel {
   };
 
   // UPLOAD proof
-  uploadProof = async (transactionId: string, customerId: string, imageProof: string) => {
+  uploadProof = async (payload: UploadProofPayload) => {
     return await this.prisma.transactions.update({
-      where: { id: transactionId, user_id: customerId },
+      where: { id: payload.transactionId, user_id: payload.customerId },
       data: {
-        proof: imageProof,
+        proof_url: payload.proof_url,
+        proof_public_id: payload.proof_public_id,
       },
     });
   };

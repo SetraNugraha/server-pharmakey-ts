@@ -1,32 +1,19 @@
 import multer from "multer";
-import fs from "fs";
-import path from "path";
 import { Request } from "express";
-import { AppError } from "./error.middleware";
+import cloudinary from "../config/cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 
-// Check if folder already create or not
-const hasImagePath = (path: string) => {
-  if (!fs.existsSync(path)) {
-    fs.mkdirSync(path, { recursive: true });
-  }
-};
-
-const configureMulter = (folderName: string) => {
-  return multer({
-    storage: multer.diskStorage({
-      destination: (req: Request, file: Express.Multer.File, cb) => {
-        const uploadPath = path.join(__dirname, "../../public/images", folderName);
-        hasImagePath(uploadPath);
-        cb(null, uploadPath);
-      },
-      filename: (req: Request, file: Express.Multer.File, cb) => {
-        const timestamp = Date.now();
-        const fileName = path.parse(file.originalname).name.toLowerCase();
-        const sanitizedFileName = fileName.replace(/[^a-z0-9]/gi, "-");
-        const fileExtension = path.extname(file.originalname);
-        cb(null, `${sanitizedFileName}-${timestamp}${fileExtension}`);
-      },
+const uploadToCloudinary = (folderPath: string) => {
+  const storage = new CloudinaryStorage({
+    cloudinary,
+    params: async () => ({
+      folder: `pharmakey/${folderPath}`,
+      allowed_formats: ["jpg", "jpeg", "png", "webp"],
     }),
+  });
+
+  return multer({
+    storage,
     fileFilter: (req: Request, file: Express.Multer.File, cb: (error: any, acceptedFile: boolean) => void) => {
       const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
       if (!allowedTypes.includes(file.mimetype)) {
@@ -39,7 +26,7 @@ const configureMulter = (folderName: string) => {
   });
 };
 
-export const uploadCategoryImage = configureMulter("categories");
-export const uploadProductsImage = configureMulter("products");
-export const uploadCustomersImage = configureMulter("customers");
-export const uploadProofTransactionsImage = configureMulter("proofTransactions");
+export const uploadCategoryImage = uploadToCloudinary("categories");
+export const uploadProductsImage = uploadToCloudinary("products");
+export const uploadCustomersImage = uploadToCloudinary("customers");
+export const uploadProofTransactionsImage = uploadToCloudinary("proofTransactions");

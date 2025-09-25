@@ -6,7 +6,12 @@ export const ProductSchema = z.object({
   category_id: z.string(),
   name: z.string().nonempty("name cannot be empty"),
   slug: z.string(),
-  product_image: z
+  image_url: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (!val || val.trim() === "" ? null : val)),
+  image_public_id: z
     .string()
     .optional()
     .nullable()

@@ -1,10 +1,11 @@
-import { keyof, ZodError } from "zod";
+import { ZodError } from "zod";
 import generateSlug from "../../utils/generateSlug";
 import { CategoryModel } from "../category/category.model";
 import { ProductModel } from "./product.model";
 import { AppError } from "../../middlewares/error.middleware";
 import { CreateProductDto, UpdateProductDto } from "./product.schema";
-import { unlinkImage } from "../../utils/unlinkImage";
+import { deleteImageCloudinary } from "../../utils/deleteImageCloudinary";
+
 export class ProductService {
   constructor(private model: ProductModel, private categoryModel: CategoryModel) {}
 
@@ -61,13 +62,13 @@ export class ProductService {
     return data;
   };
 
-  updateProduct = async (productId: string, payload: UpdateProductDto) => {
-    if (!productId) {
+  updateProduct = async (payload: UpdateProductDto) => {
+    if (!payload.id) {
       throw new AppError("product id not found", 404);
     }
 
     // Find Exists Product
-    const product = await this.model.getProductById(productId);
+    const product = await this.model.getProductById(payload.id);
     if (!product) {
       throw new AppError("product not found", 404);
     }
@@ -88,27 +89,29 @@ export class ProductService {
       }
     }
 
-    // Unlink Old Image
-    if (payload.product_image && product.product_image) {
-      unlinkImage("products", product.product_image);
+    // Delete Old Image
+    if (payload.image_public_id && product.image_public_id) {
+      await deleteImageCloudinary(product.image_public_id);
     }
 
     const newPayload = {
+      id: product.id,
       name: payload.name ?? product.name,
       category_id: payload.category_id ?? product.category_id,
       price: payload.price ? Number(payload.price) : product.price,
-      product_image: payload.product_image ?? product.product_image,
+      image_url: payload.image_url ?? product.image_url,
+      image_public_id: payload.image_public_id ?? product.image_public_id,
       description: payload.description ?? product.description,
     };
 
-    // some() return boolean
+    // some() return boolean => for check are some field change or not
     const isChanges = Object.entries(newPayload).some(([key, val]) => val !== undefined && val !== product[key as keyof typeof product]);
 
     if (!isChanges) {
       throw new AppError("no fields are changes", 404);
     }
 
-    return await this.model.updateProduct(product.id, {
+    return await this.model.updateProduct({
       payload: newPayload,
       slug: payload.name ? newSlug : product.slug,
     });
@@ -124,8 +127,9 @@ export class ProductService {
       throw new AppError("product not found", 404);
     }
 
-    if (existsProduct.product_image) {
-      unlinkImage("products", existsProduct.product_image);
+    // Delete Old Image
+    if (existsProduct.image_public_id) {
+      await deleteImageCloudinary(existsProduct.image_public_id);
     }
 
     return await this.model.deleteProduct(existsProduct.id);

@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { GetCategoryDto } from "./category.schema";
+import { CreateCategorySchema, CreateCategoryDto, GetCategoryDto, UpdateCategoryDto } from "./category.schema";
 import { IMetadata } from "../../interface/metadata.interface";
 
 export class CategoryModel {
@@ -7,7 +7,8 @@ export class CategoryModel {
     id: true,
     name: true,
     slug: true,
-    category_image: true,
+    image_url: true,
+    image_public_id: true,
   };
   constructor(private prisma: PrismaClient) {}
 
@@ -51,26 +52,19 @@ export class CategoryModel {
     });
   };
 
-  createCategory = async (payload: {
-    name: string;
-    slug: string;
-    category_image: string | null;
-  }): Promise<GetCategoryDto> => {
+  createCategory = async ({ payload, slug }: { payload: CreateCategoryDto; slug: string }): Promise<GetCategoryDto> => {
     const data = await this.prisma.category.create({
-      data: { ...payload },
+      data: { ...payload, slug },
       select: this.select,
     });
 
     return data;
   };
 
-  updateCategory = async (
-    categoryId: string,
-    payload: { name?: string; category_image?: string | null }
-  ): Promise<GetCategoryDto> => {
+  updateCategory = async ({ payload, slug }: { payload: UpdateCategoryDto; slug: string }): Promise<GetCategoryDto> => {
     const data = await this.prisma.category.update({
-      where: { id: categoryId },
-      data: payload,
+      where: { id: payload.id },
+      data: { ...payload, slug },
       select: this.select,
     });
 

@@ -1,6 +1,5 @@
-import { keyof } from "zod";
 import { AppError } from "../../middlewares/error.middleware";
-import { unlinkImage } from "../../utils/unlinkImage";
+import { deleteImageCloudinary } from "../../utils/deleteImageCloudinary";
 import { CustomerModel } from "./customer.model";
 import { IGetCustomerDto, UpdateCustomerDto } from "./customer.schema";
 
@@ -36,8 +35,8 @@ export class CustomerService {
     }
 
     // Unlink Old Image
-    if (customer.profile_image && payload.profile_image) {
-      unlinkImage("customers", customer.profile_image);
+    if (payload.image_public_id && customer.image_public_id) {
+      await deleteImageCloudinary(customer.image_public_id);
     }
 
     const newPayload = {
@@ -47,12 +46,11 @@ export class CustomerService {
       city: payload.city ?? customer.city,
       post_code: payload.post_code ?? customer.post_code,
       phone_number: payload.phone_number ?? customer.phone_number,
-      profile_image: payload.profile_image ?? customer.profile_image,
+      image_url: payload.image_url ?? customer.image_url,
+      image_public_id: payload.image_public_id ?? customer.image_public_id,
     };
 
-    const isChanges = Object.entries(newPayload).some(
-      ([key, val]) => val !== undefined && val !== customer[key as keyof typeof customer]
-    );
+    const isChanges = Object.entries(newPayload).some(([key, val]) => val !== undefined && val !== customer[key as keyof typeof customer]);
 
     if (!isChanges) {
       throw new AppError("no feilds are changes", 404);
@@ -71,8 +69,8 @@ export class CustomerService {
       throw new AppError("customer not found", 404);
     }
 
-    if (customer.profile_image) {
-      unlinkImage("customers", customer.profile_image);
+    if (customer.image_public_id) {
+      await deleteImageCloudinary(customer.image_public_id);
     }
 
     await this.model.deleteCustomer(customer.id);

@@ -8,7 +8,8 @@ export class ProductModel {
     category_id: true,
     name: true,
     slug: true,
-    product_image: true,
+    image_url: true,
+    image_public_id: true,
     price: true,
     description: true,
     created_at: true,
@@ -37,11 +38,7 @@ export class ProductModel {
     };
   };
 
-  getProductByFilter = async (
-    page: number,
-    limit: number,
-    search?: string
-  ): Promise<{ products: GetProductDto[]; meta: IMetadata | null }> => {
+  getProductByFilter = async (page: number, limit: number, search?: string): Promise<{ products: GetProductDto[]; meta: IMetadata | null }> => {
     if (!search) return { products: [], meta: null };
 
     const filter: any[] = [
@@ -93,7 +90,7 @@ export class ProductModel {
   getProductBySlug = async (slug: string): Promise<GetProductDto | null> => {
     return await this.prisma.products.findUnique({
       where: { slug },
-      select: { ...this.select, category: { select: { name: true, category_image: true } } },
+      select: { ...this.select, category: { select: { name: true, image_url: true } } },
     });
   };
 
@@ -106,18 +103,9 @@ export class ProductModel {
     return data;
   };
 
-  updateProduct = async (
-    productId: string,
-    {
-      payload,
-      slug,
-    }: {
-      payload: UpdateProductDto;
-      slug: string | undefined;
-    }
-  ): Promise<GetProductDto> => {
+  updateProduct = async ({ payload, slug }: { payload: UpdateProductDto; slug: string | undefined }): Promise<GetProductDto> => {
     const data = await this.prisma.products.update({
-      where: { id: productId },
+      where: { id: payload.id },
       data: { ...payload, slug },
       select: this.select,
     });

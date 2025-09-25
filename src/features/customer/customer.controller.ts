@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { CustomerService } from "./customer.service";
 import { successResponse } from "../../utils/response";
-import { unlinkImage } from "../../utils/unlinkImage";
+import { deleteImageCloudinary } from "../../utils/deleteImageCloudinary";
 
 export class CustomerController {
   constructor(private service: CustomerService) {}
@@ -28,16 +28,18 @@ export class CustomerController {
   };
 
   updateCustomer = async (req: Request, res: Response, next: NextFunction) => {
-    const profile_image = req.file ? req.file.filename : null;
+    const image_url = req?.file?.path || null;
+    const image_public_id = req?.file?.filename || null;
 
     try {
       const customerId = req.user!.userId;
-      const data = await this.service.updateCustomer(customerId, { ...req.body, profile_image });
+      const data = await this.service.updateCustomer(customerId, { ...req.body, image_url, image_public_id });
       successResponse(res, 200, "update customer success", data);
     } catch (error) {
-      if (profile_image) {
-        unlinkImage("customers", profile_image);
+      if (image_public_id) {
+        await deleteImageCloudinary(image_public_id);
       }
+
       next(error);
     }
   };

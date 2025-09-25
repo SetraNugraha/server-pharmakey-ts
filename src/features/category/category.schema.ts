@@ -5,7 +5,16 @@ export const CategorySchema = z.object({
   id: z.string(),
   name: z.string().nonempty("name is required"),
   slug: z.string(),
-  category_image: z.string().nullable().optional(),
+  image_url: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (!val || val.trim() === "" ? null : val)),
+  image_public_id: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (!val || val.trim() === "" ? null : val)),
 });
 
 // GET
@@ -22,4 +31,4 @@ export type CreateCategoryDto = z.infer<typeof CreateCategorySchema>;
 export const UpdateCategorySchema = CategorySchema.partial().omit({
   slug: true,
 });
-export type UpdateCategoryDto = z.infer<typeof CategorySchema>;
+export type UpdateCategoryDto = z.infer<typeof UpdateCategorySchema>;

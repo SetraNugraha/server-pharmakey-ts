@@ -12,9 +12,19 @@ export interface GetTransactionParam {
 interface CheckoutCustomer {
   username: string;
   email: string;
-  profile_image: string | null;
+  image_url: string | null;
 }
 
+// BILLING
+export interface CheckoutBilling {
+  sub_total: number;
+  tax: number;
+  delivery_fee: number;
+  total_amount: number;
+  payment_method: PaymentMethod;
+}
+
+// SHIPPING
 interface CheckoutShipping {
   address: string;
   city: string;
@@ -25,7 +35,7 @@ interface CheckoutShipping {
 export interface GetTransactionDto {
   id: string;
   is_paid: IsPaid;
-  proof: string | null;
+  proof_url: string | null;
   totalItemPurchase: number;
   created_at: string | Date;
   updated_at: string | Date;
@@ -40,7 +50,7 @@ export interface TransactionDetailDto {
   price: number;
   product: {
     name: string;
-    product_image: string | File | null;
+    image_url: string | File | null;
   };
 }
 
@@ -51,14 +61,7 @@ export interface CreateTransactionDetail {
   quantity: number;
 }
 
-export interface CheckoutBilling {
-  sub_total: number;
-  tax: number;
-  delivery_fee: number;
-  total_amount: number;
-  payment_method: PaymentMethod;
-}
-
+// CHECKOUT BODY
 export const CheckoutBodySchema = z.object({
   address: z.string({ message: "address is required" }).min(1, { message: "address required" }),
   city: z.string({ message: "city is required" }).min(1, { message: "city is required" }),
@@ -82,7 +85,16 @@ export const CheckoutBodySchema = z.object({
 
 export type CheckoutBodyDto = z.infer<typeof CheckoutBodySchema>;
 
+// CHECKOUT FEATURE
 export interface CheckoutTransactionDto extends CheckoutBilling, CheckoutBodyDto {
   is_paid: IsPaid;
-  proof: string | null;
+  proof_url: string | null;
+}
+
+// UPLOAD PROOF PAYLOAD
+export interface UploadProofPayload {
+  transactionId: string;
+  customerId: string;
+  proof_url: string | undefined;
+  proof_public_id: string | undefined;
 }

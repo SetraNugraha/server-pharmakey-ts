@@ -2,8 +2,9 @@ import { keyof, ZodError } from "zod";
 import generateSlug from "../../utils/generateSlug";
 import { CategoryModel } from "./category.model";
 import { AppError } from "../../middlewares/error.middleware";
-import { unlinkImage } from "../../utils/unlinkImage";
+import { deleteImageCloudinary } from "../../utils/deleteImageCloudinary";
 import { CreateCategoryDto, UpdateCategoryDto } from "./category.schema";
+import cloudinary from "../../config/cloudinary";
 
 export class CategoryService {
   constructor(private model: CategoryModel) {}
@@ -14,7 +15,7 @@ export class CategoryService {
   };
 
   createCategory = async (payload: CreateCategoryDto) => {
-    const { name, category_image } = payload;
+    const { name, image_url, image_public_id } = payload;
     const sanitizedName = name.trim();
     const newSlug = generateSlug(sanitizedName);
 
@@ -31,28 +32,28 @@ export class CategoryService {
 
     const preparePayload = {
       name: sanitizedName,
-      slug: newSlug,
-      category_image: category_image || null,
+      image_url,
+      image_public_id,
     };
 
-    const data = await this.model.createCategory(preparePayload);
+    const data = await this.model.createCategory({ payload: preparePayload, slug: newSlug });
 
     return data;
   };
 
-  updateCategory = async (categoryId: string, payload: UpdateCategoryDto) => {
-    if (!categoryId?.trim()) {
-      unlinkImage("categories", payload.category_image);
-      throw new AppError("category id required", 400);
+  updateCategory = async (payload: UpdateCategoryDto) => {
+    if (!payload.id) {
+      throw new AppError("category id required", 404);
     }
 
-    const existsCategory = await this.model.getCategoryById(categoryId);
+    const existsCategory = await this.model.getCategoryById(payload.id);
     if (!existsCategory) {
       throw new AppError("category not found", 404);
     }
 
-    const { name, category_image = null } = payload;
+    const { name, image_url = null, image_public_id = null } = payload;
 
+    // Find Exist name by slug
     let newSlug: string | undefined;
     let sanitizedName: string | undefined;
     if (name) {
@@ -72,9 +73,10 @@ export class CategoryService {
     }
 
     const newPayload = {
+      id: existsCategory.id,
       name: sanitizedName ?? existsCategory.name,
-      slug: newSlug ?? existsCategory.slug,
-      category_image: category_image ?? existsCategory.category_image,
+      image_url: image_url ?? existsCategory.image_url,
+      image_public_id: image_public_id ?? existsCategory.image_public_id,
     };
 
     const isChanges = Object.entries(newPayload).some(
@@ -85,12 +87,12 @@ export class CategoryService {
       throw new AppError("no fields are changes", 404);
     }
 
-    // Unlink old image if exists
-    if (category_image && existsCategory.category_image) {
-      unlinkImage("categories", existsCategory.category_image);
+    // Delete Old Image
+    if (image_url && existsCategory.image_public_id) {
+      await deleteImageCloudinary(existsCategory.image_public_id);
     }
 
-    return await this.model.updateCategory(existsCategory.id, newPayload);
+    return await this.model.updateCategory({ payload: newPayload, slug: newSlug ?? existsCategory.slug });
   };
 
   deleteCategory = async (categoryId: string) => {
@@ -103,9 +105,9 @@ export class CategoryService {
       throw new AppError("category not found", 404);
     }
 
-    // Unlink old image if exists
-    if (existsCategory.category_image) {
-      unlinkImage("categories", existsCategory.category_image);
+    // Delete image from cloudinary
+    if (existsCategory.image_public_id) {
+      await deleteImageCloudinary(existsCategory.image_public_id);
     }
 
     return await this.model.deleteCategory(categoryId);

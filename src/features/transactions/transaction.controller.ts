@@ -2,7 +2,7 @@ import { IsPaid } from "@prisma/client";
 import { successResponse } from "../../utils/response";
 import { TransactionService } from "./transaction.service";
 import { Request, Response, NextFunction } from "express";
-import { unlinkImage } from "../../utils/unlinkImage";
+import { deleteImageCloudinary } from "../../utils/deleteImageCloudinary";
 
 export class TransactionController {
   constructor(private service: TransactionService) {}
@@ -63,17 +63,18 @@ export class TransactionController {
   };
 
   uploadProof = async (req: Request, res: Response, next: NextFunction) => {
-    const imageProof = req.file!.filename;
+    const proof_url = req?.file?.path;
+    const proof_public_id = req?.file?.filename;
 
     try {
       const customerId = req.user!.userId;
       const transactionId = req.params.transactionId;
 
-      const data = await this.service.uploadProof(transactionId, customerId, imageProof);
+      const data = await this.service.uploadProof({ transactionId, customerId, proof_url, proof_public_id });
       successResponse(res, 200, "upload proof success", data);
     } catch (error) {
-      if (imageProof) {
-        unlinkImage("proofTransactions", imageProof);
+      if (proof_public_id) {
+        await deleteImageCloudinary(proof_public_id);
       }
       next(error);
     }

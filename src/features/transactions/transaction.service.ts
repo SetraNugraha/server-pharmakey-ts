@@ -3,7 +3,7 @@ import { AppError } from "../../middlewares/error.middleware";
 import { CartModel } from "../carts/cart.model";
 import { CustomerModel } from "../customer/customer.model";
 import { TransactionModel } from "./transaction.model";
-import { CheckoutTransactionDto } from "./transaction.schema";
+import { CheckoutTransactionDto, UploadProofPayload } from "./transaction.schema";
 
 export class TransactionService {
   constructor(private model: TransactionModel, private cartModel: CartModel, private customerModel: CustomerModel) {}
@@ -61,7 +61,7 @@ export class TransactionService {
 
     const newPayload = {
       is_paid: IsPaid.PENDING,
-      proof: null,
+      proof_url: null,
       payment_method: payload.payment_method,
       sub_total: Number(subTotal),
       tax: Number(tax),
@@ -94,10 +94,12 @@ export class TransactionService {
     return newTransaction;
   };
 
-  uploadProof = async (transactionId: string, customerId: string, imageProof: string) => {
+  uploadProof = async (payload: UploadProofPayload) => {
+    const { transactionId, customerId, proof_url, proof_public_id } = payload;
+
     if (!customerId) throw new AppError("customer id required", 404);
     if (!transactionId) throw new AppError("transaction id required", 404);
-    if (!imageProof) throw new AppError("file image not found", 404);
+    if (!proof_url) throw new AppError("file image not found", 404);
 
     const [customer, transaction] = await Promise.all([
       this.customerModel.getCustomerById(customerId),
@@ -112,7 +114,14 @@ export class TransactionService {
       throw new AppError("transaction not found", 404);
     }
 
-    return await this.model.uploadProof(transaction.id, customer.id, imageProof);
+    const newPayload: UploadProofPayload = {
+      transactionId: transaction.id,
+      customerId: customer.id,
+      proof_url,
+      proof_public_id,
+    };
+
+    return await this.model.uploadProof(newPayload);
   };
 
   updateIsPaid = async (transactionId: string, newStatus: IsPaid) => {
@@ -129,7 +138,7 @@ export class TransactionService {
       throw new AppError("paid status already updated", 400);
     }
 
-    if (newStatus === "SUCCESS" && (!transaction.proof || transaction.proof === null)) {
+    if (newStatus === "SUCCESS" && (!transaction.proof_url || transaction.proof_url === null)) {
       throw new AppError("customer must be upload the proof first", 400);
     }
 
