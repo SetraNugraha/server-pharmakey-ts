@@ -34,11 +34,6 @@ export class CustomerService {
       throw new AppError("customer not found", 404);
     }
 
-    // Unlink Old Image
-    if (payload.image_public_id && customer.image_public_id) {
-      await deleteImageCloudinary(customer.image_public_id);
-    }
-
     const newPayload = {
       username: payload.username ?? customer.username,
       email: payload.email ?? customer.email,
@@ -54,6 +49,11 @@ export class CustomerService {
 
     if (!isChanges) {
       throw new AppError("no feilds are changes", 404);
+    }
+
+    // Unlink Old Image
+    if (payload.image_public_id && customer.image_public_id) {
+      await deleteImageCloudinary(customer.image_public_id);
     }
 
     return await this.model.updateCustomer(customer.id, newPayload);

@@ -7,8 +7,16 @@ const CustomerSchema = z.object({
   email: z.email({ message: "invalid email format" }).min(1, { message: "email cannot be empty" }),
   password: z.string(),
   role: z.enum(Role).refine((val) => val == Role.CUSTOMER, { message: "role must be customer" }),
-  image_url: z.string().nullable(),
-  image_public_id: z.string().nullable(),
+  image_url: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (!val || val.trim() === "" ? null : val)),
+  image_public_id: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (!val || val.trim() === "" ? null : val)),
   address: z.string().nullable(),
   city: z.string().nullable(),
   post_code: z.string().max(5, { message: "post code should be 5 number" }).nullable(),

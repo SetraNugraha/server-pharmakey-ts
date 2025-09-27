@@ -46,7 +46,7 @@ export class AdminService {
         month: dataDaashboard.totalRevenue[0].month,
         total: current,
         growth,
-        isPositive: growth > 0,
+        isPositive: growth >= 0,
       };
     }
 

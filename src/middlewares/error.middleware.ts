@@ -63,7 +63,7 @@ export function errorMiddleware(err: Error, req: Request, res: Response, _next: 
     });
   }
 
-  console.error(`[${req.method}] ${req.url} - unexpected error: ${err}`);
+  console.error(`[${req.method}] ${req.url} - unexpected error: ${JSON.stringify(err, null, 2)}`);
   return res.status(500).json({
     success: false,
     message: "Internal server error",
