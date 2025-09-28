@@ -61,7 +61,7 @@ model Category {
 
 model Products {
   id              String  @id @default(uuid()) @db.Text
-  category_id     String  @db.Text
+  category_id     String? @db.Text
   name            String
   slug            String  @unique
   image_url       String? @db.Text

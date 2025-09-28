@@ -110,6 +110,6 @@ export class CategoryService {
       await deleteImageCloudinary(existsCategory.image_public_id);
     }
 
-    return await this.model.deleteCategory(categoryId);
+    return await this.model.deleteCategory(existsCategory.id);
   };
 }

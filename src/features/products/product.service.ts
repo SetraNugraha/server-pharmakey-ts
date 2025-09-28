@@ -33,6 +33,16 @@ export class ProductService {
   };
 
   createProduct = async (payload: CreateProductDto) => {
+    if (!payload.category_id) {
+      throw new ZodError([
+        {
+          code: "custom",
+          path: ["category"],
+          message: "category cannot be unknow or empty",
+        },
+      ]);
+    }
+
     const existsCategory = await this.categoryModel.getCategoryById(payload.category_id);
     const slug = generateSlug(payload.name);
     const existsProduct = await this.model.getProductBySlug(slug);
@@ -89,11 +99,6 @@ export class ProductService {
       }
     }
 
-    // Delete Old Image
-    if (payload.image_public_id && product.image_public_id) {
-      await deleteImageCloudinary(product.image_public_id);
-    }
-
     const newPayload = {
       id: product.id,
       name: payload.name ?? product.name,
@@ -109,6 +114,21 @@ export class ProductService {
 
     if (!isChanges) {
       throw new AppError("no fields are changes", 404);
+    }
+
+    if (!newPayload.category_id || newPayload.category_id === null || newPayload.category_id === "unknown") {
+      throw new ZodError([
+        {
+          code: "custom",
+          path: ["category"],
+          message: "category cannot be unknow or empty",
+        },
+      ]);
+    }
+
+    // Delete Old Image
+    if (payload.image_public_id && product.image_public_id) {
+      await deleteImageCloudinary(product.image_public_id);
     }
 
     return await this.model.updateProduct({

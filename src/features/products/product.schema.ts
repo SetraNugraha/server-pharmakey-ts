@@ -3,7 +3,7 @@ import { z } from "zod";
 // SCHEMA
 export const ProductSchema = z.object({
   id: z.string(),
-  category_id: z.string(),
+  category_id: z.string().optional().nullable(),
   name: z.string().nonempty("name cannot be empty"),
   slug: z.string(),
   image_url: z
