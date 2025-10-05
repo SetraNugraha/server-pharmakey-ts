@@ -1,10 +1,10 @@
 import { PrismaClient } from "@prisma/client";
-import { AddToCartDto, CustomerCartsDto } from "./cart.schema";
+import { AddToCartDto } from "./cart.schema";
 
 export class CartModel {
   constructor(private prisma: PrismaClient) {}
 
-  getCartByCustomerId = async (customerId: string): Promise<CustomerCartsDto> => {
+  getCartByCustomerId = async (customerId: string) => {
     const data = await this.prisma.users.findUnique({
       where: { id: customerId, role: "CUSTOMER" },
       select: {
@@ -29,7 +29,7 @@ export class CartModel {
       },
     });
 
-    return { customer_id: customerId, ...data! };
+    return { customer_id: customerId, ...data };
   };
 
   findExistsCarts = async (customerId: string, productId: string) => {

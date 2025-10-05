@@ -3,7 +3,7 @@ import { z } from "zod";
 interface ProductDetail {
   name: string;
   slug: string;
-  category_id: string;
+  category_id?: string | null;
   price: number;
   image_url: string | null;
 }
