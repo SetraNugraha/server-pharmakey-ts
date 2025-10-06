@@ -12,8 +12,21 @@ const app: Express = express();
 dotenv.config();
 const PORT = process.env.PORT || 3001;
 
+const allowedCors = process.env.CORS_ORIGIN?.split(",") || [];
+
 app.use(morgan(":method :url :status - :response-time ms"));
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedCors.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("not allowed by cors"));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 app.use(express.json());
 app.use(urlencoded({ extended: true }));
